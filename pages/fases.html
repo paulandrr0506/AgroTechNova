@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Fases - AgroTechnova</title>
+    <link rel="stylesheet" href="../public/css/base.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header con navegación unificada -->
+        <header>
+            <div class="header-content">
+                <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+                <h1>📅 Gestión de Fases</h1>
+                <div class="user-info">
+                    <span id="userName">Cargando...</span>
+                    <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+                </div>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="proyectos.html">Proyectos</a>
+                <a href="usuarios.html">Usuarios</a>
+                <a href="agendaReuniones.html">Agenda</a>
+                
+                <!-- Dropdown: Gestión Financiera -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Gestión Financiera
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="recursos.html">Recursos</a>
+                    <a href="presupuestos.html">Presupuestos</a>
+                    <a href="gastos.html">Gastos</a>
+                  </div>
+                </div>
+                
+                <!-- Dropdown: Inventario y Proveedores -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Inventario y Proveedores
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="proveedores.html">Proveedores</a>
+                    <a href="productos.html">Productos</a>
+                    <a href="inventario.html">Inventario</a>
+                  </div>
+                </div>
+
+                <!-- Dropdown: Reportes y Documentación -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Reportes y Documentación
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="reportes.html">Reportes Financieros</a>
+                    <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+                    <a href="catalogo.html">Catálogo de Servicios</a>
+                  </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="dashboard.html">Dashboard</a>
+            <span>›</span>
+            <a href="proyectos.html">Proyectos</a>
+            <span>›</span>
+            <span id="projectName">Cargando...</span>
+            <span>›</span>
+            <span>Fases</span>
+        </div>
+
+        <!-- Progreso del Proyecto (RF13) -->
+        <section class="progress-section">
+            <h2>📊 Progreso del Proyecto</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressBar" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="progressText">0% completado</span>
+                    <span id="phaseCount">0 fases</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Botón Crear Fase -->
+        <section class="actions-section">
+            <button onclick="openCreateModal()" class="btn-primary">➕ Crear Fase</button>
+        </section>
+
+        <!-- Tabla de Fases -->
+        <section class="phases-section">
+            <h2>📋 Fases del Proyecto</h2>
+            <div id="loadingPhases" class="loading">Cargando fases...</div>
+            <div id="phasesTable" style="display: none;">
+                <table class="phases-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Avance</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="phasesTableBody">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noPhases" style="display: none;" class="no-data">
+                No hay fases registradas. Cree la primera fase para comenzar.
+            </div>
+        </section>
+
+        <!-- Modal Crear/Editar Fase -->
+        <div id="phaseModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Crear Fase</h2>
+                <form id="phaseForm" onsubmit="savePhase(event)">
+                    <input type="hidden" id="phaseId">
+                    
+                    <label for="nombre">Nombre de la Fase * (RF13)</label>
+                    <input type="text" id="nombre" required minlength="3" placeholder="Ej: Preparación del Terreno">
+
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" rows="3" placeholder="Descripción detallada de la fase"></textarea>
+
+                    <label for="fechaInicio">Fecha de Inicio * (RF13)</label>
+                    <input type="date" id="fechaInicio" required>
+
+                    <label for="fechaFin">Fecha de Finalización * (RF13)</label>
+                    <input type="date" id="fechaFin" required>
+
+                    <label for="porcentaje">Porcentaje de Avance (0-100) (RF13)</label>
+                    <input type="number" id="porcentaje" min="0" max="100" value="0" required>
+                    <small>Progreso actual de esta fase</small>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary">Guardar</button>
+                        <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let projectId = null;
+        let phases = [];
+
+        // Obtener projectId de URL
+        const urlParams = new URLSearchParams(window.location.search);
+        projectId = urlParams.get('projectId');
+
+        if (!projectId) {
+            alert('No se especificó un proyecto');
+            window.location.href = 'proyectos.html';
+        }
+
+        // Verificar sesión al cargar
+        window.onload = async () => {
+            await checkSession();
+            await loadProjectInfo();
+            await loadPhases();
+            await loadProgress();
+        };
+
+        // Verificar sesión
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/auth/session', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                document.getElementById('userName').textContent = currentUser.nombre;
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Cargar información del proyecto
+        async function loadProjectInfo() {
+            try {
+                const response = await fetch(`/api/projects/${projectId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Proyecto no encontrado');
+
+                const data = await response.json();
+                document.getElementById('projectName').textContent = data.project.nombre;
+            } catch (error) {
+                console.error('Error al cargar proyecto:', error);
+                alert('Error al cargar información del proyecto');
+                window.location.href = 'proyectos.html';
+            }
+        }
+
+        // Cargar fases del proyecto (RF13)
+        async function loadPhases() {
+            try {
+                document.getElementById('loadingPhases').style.display = 'block';
+                document.getElementById('phasesTable').style.display = 'none';
+                document.getElementById('noPhases').style.display = 'none';
+
+                const response = await fetch(`/api/projects/${projectId}/phases`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error al cargar fases');
+
+                const data = await response.json();
+                phases = data.phases;
+
+                displayPhases(phases);
+            } catch (error) {
+                console.error('Error al cargar fases:', error);
+                document.getElementById('loadingPhases').textContent = 'Error al cargar fases';
+            }
+        }
+
+        // Cargar progreso del proyecto (RF13)
+        async function loadProgress() {
+            try {
+                const response = await fetch(`/api/projects/${projectId}/progress`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                
+                const progress = data.averageProgress || 0;
+                const totalPhases = data.totalPhases || 0;
+
+                document.getElementById('progressBar').style.width = `${progress}%`;
+                document.getElementById('progressText').textContent = `${progress.toFixed(1)}% completado`;
+                document.getElementById('phaseCount').textContent = `${totalPhases} fase${totalPhases !== 1 ? 's' : ''}`;
+            } catch (error) {
+                console.error('Error al cargar progreso:', error);
+            }
+        }
+
+        // Mostrar fases en tabla
+        function displayPhases(phases) {
+            document.getElementById('loadingPhases').style.display = 'none';
+
+            if (phases.length === 0) {
+                document.getElementById('noPhases').style.display = 'block';
+                document.getElementById('phasesTable').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('phasesTable').style.display = 'block';
+            const tbody = document.getElementById('phasesTableBody');
+            tbody.innerHTML = '';
+
+            phases.forEach(phase => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${phase.id}</td>
+                    <td><strong>${phase.nombre}</strong></td>
+                    <td>${phase.descripcion || '-'}</td>
+                    <td>${formatDate(phase.fecha_inicio)}</td>
+                    <td>${formatDate(phase.fecha_fin)}</td>
+                    <td>
+                        <div class="progress-mini">
+                            <div class="progress-mini-bar" style="width: ${phase.porcentaje_avance}%"></div>
+                        </div>
+                        <span class="progress-text">${phase.porcentaje_avance}%</span>
+                    </td>
+                    <td class="actions">
+                        <button onclick="viewMilestones(${phase.id})" class="btn-action" title="Ver Hitos">📌</button>
+                        <button onclick="editPhase(${phase.id})" class="btn-action" title="Editar">✏️</button>
+                        <button onclick="deletePhase(${phase.id})" class="btn-action btn-danger" title="Eliminar">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Abrir modal crear
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Crear Fase';
+            document.getElementById('phaseForm').reset();
+            document.getElementById('phaseId').value = '';
+            document.getElementById('porcentaje').value = 0;
+            document.getElementById('phaseModal').style.display = 'block';
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('phaseModal').style.display = 'none';
+        }
+
+        // Guardar fase (RF13)
+        async function savePhase(event) {
+            event.preventDefault();
+
+            const phaseId = document.getElementById('phaseId').value;
+            const isEdit = phaseId !== '';
+
+            const phaseData = {
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                fecha_inicio: document.getElementById('fechaInicio').value,
+                fecha_fin: document.getElementById('fechaFin').value,
+                porcentaje_avance: parseInt(document.getElementById('porcentaje').value)
+            };
+
+            try {
+                const url = isEdit ? `/api/phases/${phaseId}` : `/api/projects/${projectId}/phases`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(phaseData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al guardar fase');
+                    return;
+                }
+
+                alert(data.message);
+                closeModal();
+                await loadPhases();
+                await loadProgress();
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar fase');
+            }
+        }
+
+        // Editar fase
+        async function editPhase(id) {
+            const phase = phases.find(p => p.id === id);
+            if (!phase) return;
+
+            document.getElementById('modalTitle').textContent = 'Editar Fase';
+            document.getElementById('phaseId').value = phase.id;
+            document.getElementById('nombre').value = phase.nombre;
+            document.getElementById('descripcion').value = phase.descripcion || '';
+            document.getElementById('fechaInicio').value = phase.fecha_inicio;
+            document.getElementById('fechaFin').value = phase.fecha_fin;
+            document.getElementById('porcentaje').value = phase.porcentaje_avance;
+            
+            document.getElementById('phaseModal').style.display = 'block';
+        }
+
+        // Eliminar fase
+        async function deletePhase(id) {
+            if (!confirm('¿Está seguro de eliminar esta fase? Se eliminarán todos sus hitos (CASCADE).')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/phases/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al eliminar fase');
+                    return;
+                }
+
+                alert(data.message);
+                await loadPhases();
+                await loadProgress();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar fase');
+            }
+        }
+
+        // Ver hitos de la fase
+        function viewMilestones(phaseId) {
+            window.location.href = `hitos.html?projectId=${projectId}&phaseId=${phaseId}`;
+        }
+
+        // Formatear fecha
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES');
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('phaseModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

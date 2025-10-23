@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Hitos - AgroTechnova</title>
+    <link rel="stylesheet" href="../public/css/base.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header con navegación unificada -->
+        <header>
+            <div class="header-content">
+                <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+                <h1>📌 Gestión de Hitos</h1>
+                <div class="user-info">
+                    <span id="userName">Cargando...</span>
+                    <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+                </div>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="proyectos.html">Proyectos</a>
+                <a href="usuarios.html">Usuarios</a>
+                <a href="agendaReuniones.html">Agenda</a>
+                
+                <!-- Dropdown: Gestión Financiera -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Gestión Financiera
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="recursos.html">Recursos</a>
+                    <a href="presupuestos.html">Presupuestos</a>
+                    <a href="gastos.html">Gastos</a>
+                  </div>
+                </div>
+                
+                <!-- Dropdown: Inventario y Proveedores -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Inventario y Proveedores
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="proveedores.html">Proveedores</a>
+                    <a href="productos.html">Productos</a>
+                    <a href="inventario.html">Inventario</a>
+                  </div>
+                </div>
+
+                <!-- Dropdown: Reportes y Documentación -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Reportes y Documentación
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="reportes.html">Reportes Financieros</a>
+                    <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+                    <a href="catalogo.html">Catálogo de Servicios</a>
+                  </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="dashboard.html">Dashboard</a>
+            <span>›</span>
+            <a href="proyectos.html">Proyectos</a>
+            <span>›</span>
+            <a href="#" onclick="goToPhases()" id="projectLink">Fases</a>
+            <span>›</span>
+            <span id="phaseName">Cargando...</span>
+        </div>
+
+        <!-- Estadísticas de Hitos (RF25) -->
+        <section class="stats-section">
+            <h2>📊 Estadísticas de Hitos</h2>
+            <div class="stats-grid">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-content">
+                        <h3 id="totalHitos">0</h3>
+                        <p>Total de Hitos</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-completed">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <h3 id="completedHitos">0</h3>
+                        <p>Completados</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-progress">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-content">
+                        <h3 id="progressHitos">0</h3>
+                        <p>En Progreso</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-pending">
+                    <div class="stat-icon">⏸️</div>
+                    <div class="stat-content">
+                        <h3 id="pendingHitos">0</h3>
+                        <p>Pendientes</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-delayed">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-content">
+                        <h3 id="delayedHitos">0</h3>
+                        <p>Retrasados</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Botón Crear Hito -->
+        <section class="actions-section">
+            <button onclick="openCreateModal()" class="btn-primary">➕ Crear Hito</button>
+        </section>
+
+        <!-- Tabla de Hitos -->
+        <section class="milestones-section">
+            <h2>📋 Hitos de la Fase</h2>
+            <div id="loadingMilestones" class="loading">Cargando hitos...</div>
+            <div id="milestonesTable" style="display: none;">
+                <table class="milestones-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Responsable</th>
+                            <th>Fecha Límite</th>
+                            <th>Estado</th>
+                            <th>Fecha Completado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="milestonesTableBody">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noMilestones" style="display: none;" class="no-data">
+                No hay hitos registrados. Cree el primer hito para comenzar.
+            </div>
+        </section>
+
+        <!-- Modal Crear/Editar Hito -->
+        <div id="milestoneModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Crear Hito</h2>
+                <form id="milestoneForm" onsubmit="saveMilestone(event)">
+                    <input type="hidden" id="milestoneId">
+                    
+                    <label for="nombre">Nombre del Hito * (RF25)</label>
+                    <input type="text" id="nombre" required minlength="3" placeholder="Ej: Compra de Insumos">
+
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" rows="3" placeholder="Descripción detallada del hito"></textarea>
+
+                    <label for="fechaLimite">Fecha Límite * (RF25)</label>
+                    <input type="date" id="fechaLimite" required>
+
+                    <label for="estado">Estado (RF25)</label>
+                    <select id="estado">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_progreso">En Progreso</option>
+                        <option value="completado">Completado</option>
+                        <option value="retrasado">Retrasado</option>
+                    </select>
+                    <small>Al marcar como "Completado", se registra automáticamente la fecha</small>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary">Guardar</button>
+                        <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let projectId = null;
+        let phaseId = null;
+        let milestones = [];
+
+        // Obtener parámetros de URL
+        const urlParams = new URLSearchParams(window.location.search);
+        projectId = urlParams.get('projectId');
+        phaseId = urlParams.get('phaseId');
+
+        if (!projectId || !phaseId) {
+            alert('No se especificó un proyecto o fase');
+            window.location.href = 'proyectos.html';
+        }
+
+        // Verificar sesión al cargar
+        window.onload = async () => {
+            await checkSession();
+            await loadPhaseInfo();
+            await loadMilestones();
+            await loadStats();
+        };
+
+        // Verificar sesión
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/auth/session', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                document.getElementById('userName').textContent = currentUser.nombre;
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Cargar información de la fase
+        async function loadPhaseInfo() {
+            try {
+                const response = await fetch(`/api/phases/${phaseId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Fase no encontrada');
+
+                const data = await response.json();
+                document.getElementById('phaseName').textContent = data.phase.nombre;
+            } catch (error) {
+                console.error('Error al cargar fase:', error);
+                alert('Error al cargar información de la fase');
+                window.location.href = `fases.html?projectId=${projectId}`;
+            }
+        }
+
+        // Cargar hitos de la fase (RF25)
+        async function loadMilestones() {
+            try {
+                document.getElementById('loadingMilestones').style.display = 'block';
+                document.getElementById('milestonesTable').style.display = 'none';
+                document.getElementById('noMilestones').style.display = 'none';
+
+                const response = await fetch(`/api/phases/${phaseId}/milestones`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error al cargar hitos');
+
+                const data = await response.json();
+                milestones = data.milestones;
+
+                displayMilestones(milestones);
+            } catch (error) {
+                console.error('Error al cargar hitos:', error);
+                document.getElementById('loadingMilestones').textContent = 'Error al cargar hitos';
+            }
+        }
+
+        // Cargar estadísticas de hitos (RF25)
+        async function loadStats() {
+            try {
+                const response = await fetch(`/api/projects/${projectId}/stats`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const stats = data.stats;
+
+                document.getElementById('totalHitos').textContent = stats.total || 0;
+                document.getElementById('completedHitos').textContent = stats.completados || 0;
+                document.getElementById('progressHitos').textContent = stats.en_progreso || 0;
+                document.getElementById('pendingHitos').textContent = stats.pendientes || 0;
+                document.getElementById('delayedHitos').textContent = stats.retrasados || 0;
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
+        }
+
+        // Mostrar hitos en tabla
+        function displayMilestones(milestones) {
+            document.getElementById('loadingMilestones').style.display = 'none';
+
+            if (milestones.length === 0) {
+                document.getElementById('noMilestones').style.display = 'block';
+                document.getElementById('milestonesTable').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('milestonesTable').style.display = 'block';
+            const tbody = document.getElementById('milestonesTableBody');
+            tbody.innerHTML = '';
+
+            milestones.forEach(milestone => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${milestone.id}</td>
+                    <td><strong>${milestone.nombre}</strong></td>
+                    <td>${milestone.descripcion || '-'}</td>
+                    <td>${milestone.responsable || 'No asignado'}</td>
+                    <td>${formatDate(milestone.fecha_limite)}</td>
+                    <td><span class="badge badge-${milestone.estado}">${formatEstado(milestone.estado)}</span></td>
+                    <td>${milestone.fecha_completado ? formatDate(milestone.fecha_completado) : '-'}</td>
+                    <td class="actions">
+                        <button onclick="markAsCompleted(${milestone.id})" class="btn-action" title="Marcar Completado" 
+                            ${milestone.estado === 'completado' ? 'disabled' : ''}>✅</button>
+                        <button onclick="editMilestone(${milestone.id})" class="btn-action" title="Editar">✏️</button>
+                        <button onclick="deleteMilestone(${milestone.id})" class="btn-action btn-danger" title="Eliminar">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Abrir modal crear
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Crear Hito';
+            document.getElementById('milestoneForm').reset();
+            document.getElementById('milestoneId').value = '';
+            document.getElementById('estado').value = 'pendiente';
+            document.getElementById('milestoneModal').style.display = 'block';
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('milestoneModal').style.display = 'none';
+        }
+
+        // Guardar hito (RF25)
+        async function saveMilestone(event) {
+            event.preventDefault();
+
+            const milestoneId = document.getElementById('milestoneId').value;
+            const isEdit = milestoneId !== '';
+
+            const milestoneData = {
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                fecha_limite: document.getElementById('fechaLimite').value,
+                estado: document.getElementById('estado').value
+            };
+
+            try {
+                const url = isEdit ? `/api/milestones/${milestoneId}` : `/api/phases/${phaseId}/milestones`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(milestoneData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al guardar hito');
+                    return;
+                }
+
+                alert(data.message);
+                closeModal();
+                await loadMilestones();
+                await loadStats();
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar hito');
+            }
+        }
+
+        // Editar hito
+        async function editMilestone(id) {
+            const milestone = milestones.find(m => m.id === id);
+            if (!milestone) return;
+
+            document.getElementById('modalTitle').textContent = 'Editar Hito';
+            document.getElementById('milestoneId').value = milestone.id;
+            document.getElementById('nombre').value = milestone.nombre;
+            document.getElementById('descripcion').value = milestone.descripcion || '';
+            document.getElementById('fechaLimite').value = milestone.fecha_limite;
+            document.getElementById('estado').value = milestone.estado;
+            
+            document.getElementById('milestoneModal').style.display = 'block';
+        }
+
+        // Marcar como completado (RF25)
+        async function markAsCompleted(id) {
+            if (!confirm('¿Marcar este hito como completado? Se registrará la fecha automáticamente.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/milestones/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ estado: 'completado' })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al actualizar hito');
+                    return;
+                }
+
+                alert('Hito marcado como completado exitosamente');
+                await loadMilestones();
+                await loadStats();
+            } catch (error) {
+                console.error('Error al completar:', error);
+                alert('Error al completar hito');
+            }
+        }
+
+        // Eliminar hito
+        async function deleteMilestone(id) {
+            if (!confirm('¿Está seguro de eliminar este hito?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/milestones/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al eliminar hito');
+                    return;
+                }
+
+                alert(data.message);
+                await loadMilestones();
+                await loadStats();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar hito');
+            }
+        }
+
+        // Navegar a fases
+        function goToPhases() {
+            window.location.href = `fases.html?projectId=${projectId}`;
+        }
+
+        // Formatear estado
+        function formatEstado(estado) {
+            const estados = {
+                'pendiente': 'Pendiente',
+                'en_progreso': 'En Progreso',
+                'completado': 'Completado',
+                'retrasado': 'Retrasado'
+            };
+            return estados[estado] || estado;
+        }
+
+        // Formatear fecha
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES');
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('milestoneModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

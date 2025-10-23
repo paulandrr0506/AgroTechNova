@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actividad y Logs - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    .filters-bar {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .log-item {
+      background: white;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 6px;
+      border-left: 4px solid #2196F3;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .log-item.info {
+      border-left-color: #2196F3;
+    }
+
+    .log-item.warn {
+      border-left-color: #ff9800;
+      background: #fffaf0;
+    }
+
+    .log-item.error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+
+    .log-item.critical {
+      border-left-color: #9c27b0;
+      background: #f3e5f5;
+    }
+
+    .log-item.debug {
+      border-left-color: #607d8b;
+      background: #f5f5f5;
+    }
+
+    .log-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .log-icon.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .log-icon.warn {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .log-icon.error {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+
+    .log-icon.critical {
+      background: #e1bee7;
+      color: #7b1fa2;
+    }
+
+    .log-icon.debug {
+      background: #e0e0e0;
+      color: #424242;
+    }
+
+    .log-content {
+      flex: 1;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .log-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .log-badge.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .log-badge.warn {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .log-badge.error {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+
+    .log-badge.critical {
+      background: #e1bee7;
+      color: #7b1fa2;
+    }
+
+    .log-badge.debug {
+      background: #e0e0e0;
+      color: #424242;
+    }
+
+    .log-meta {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-box {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-box h3 {
+      font-size: 2.5rem;
+      margin: 0;
+      color: #667eea;
+    }
+
+    .stat-box p {
+      margin: 0.5rem 0 0 0;
+      color: #666;
+    }
+
+    .log-detail {
+      background: #f9f9f9;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #ddd;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header con navegación -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1><i class="fas fa-chart-line"></i> Actividad del Sistema</h1>
+        <div class="user-info">
+          <span id="usuarioNombre">Cargando...</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="soporte.html">Soporte</a>
+        <a href="panelAdmin.html">Panel Admin</a>
+        <a href="actividad.html" class="active">Actividad</a>
+      </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main>
+      <div class="actions-bar">
+        <button onclick="cargarLogs()" class="btn-primary">
+          <i class="fas fa-sync"></i> Actualizar
+        </button>
+        <button onclick="exportarLogs()" class="btn-secondary">
+          <i class="fas fa-download"></i> Exportar
+        </button>
+        <button onclick="mostrarLimpiar()" class="btn-danger">
+          <i class="fas fa-trash"></i> Limpiar Antiguos
+        </button>
+      </div>
+
+      <!-- Estadísticas -->
+      <h2><i class="fas fa-chart-bar"></i> Estadísticas de Logs</h2>
+      <div class="stats-row" id="statsRow">
+        <div class="stat-box">
+          <h3>--</h3>
+          <p>Cargando...</p>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-bar">
+        <label>
+          Nivel:
+          <select id="filtroNivel" onchange="cargarLogs()">
+            <option value="">Todos</option>
+            <option value="info">Info</option>
+            <option value="warn">Warning</option>
+            <option value="error">Error</option>
+            <option value="critical">Crítico</option>
+            <option value="debug">Debug</option>
+          </select>
+        </label>
+
+        <label>
+          Origen:
+          <input type="text" id="filtroOrigen" placeholder="Ej: tickets, auth..." onchange="cargarLogs()">
+        </label>
+
+        <label>
+          Fecha Desde:
+          <input type="datetime-local" id="filtroFechaInicio" onchange="cargarLogs()">
+        </label>
+
+        <label>
+          Fecha Hasta:
+          <input type="datetime-local" id="filtroFechaFin" onchange="cargarLogs()">
+        </label>
+
+        <label>
+          Límite:
+          <select id="filtroLimit" onchange="cargarLogs()">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Lista de Logs -->
+      <h2><i class="fas fa-list"></i> Logs del Sistema</h2>
+      <div id="listaLogs">
+        <p class="loading">Cargando logs...</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let sesionActual = null;
+
+    // ========== INICIALIZACIÓN ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+      await verificarSesion();
+      await cargarEstadisticas();
+      await cargarLogs();
+    });
+
+    // ========== SESIÓN ==========
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const data = await response.json();
+        sesionActual = data;
+
+        // Solo administradores pueden acceder
+        if (!data.authenticated || !data.user || data.user.rol !== 'administrador') {
+          alert('Acceso denegado: Solo administradores pueden ver los logs del sistema');
+          window.location.href = 'dashboard.html';
+          return;
+        }
+
+        document.getElementById('usuarioNombre').textContent = data.user.nombre;
+      } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        window.location.href = 'login.html';
+      }
+    }
+
+    function cerrarSesion() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = 'login.html')
+        .catch(err => console.error('Error al cerrar sesión:', err));
+    }
+
+    // ========== LOGS ==========
+    async function cargarLogs() {
+      try {
+        const nivel = document.getElementById('filtroNivel').value;
+        const origen = document.getElementById('filtroOrigen').value;
+        const fechaInicio = document.getElementById('filtroFechaInicio').value;
+        const fechaFin = document.getElementById('filtroFechaFin').value;
+        const limit = document.getElementById('filtroLimit').value;
+
+        let url = '/api/logs?';
+        if (nivel) url += `nivel=${nivel}&`;
+        if (origen) url += `origen=${origen}&`;
+        if (fechaInicio) url += `fecha_inicio=${new Date(fechaInicio).toISOString()}&`;
+        if (fechaFin) url += `fecha_fin=${new Date(fechaFin).toISOString()}&`;
+        if (limit) url += `limit=${limit}&`;
+
+        const response = await fetch(url, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          mostrarLogs(data.data);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error al cargar logs:', error);
+        document.getElementById('listaLogs').innerHTML = 
+          '<p class="error">Error al cargar los logs del sistema</p>';
+      }
+    }
+
+    function mostrarLogs(logs) {
+      const container = document.getElementById('listaLogs');
+
+      if (logs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No hay logs que coincidan con los filtros</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = logs.map(log => `
+        <div class="log-item ${log.nivel}">
+          <div class="log-icon ${log.nivel}">
+            <i class="fas ${getIconoNivel(log.nivel)}"></i>
+          </div>
+          <div class="log-content">
+            <div class="log-header">
+              <div>
+                <span class="log-badge ${log.nivel}">${log.nivel}</span>
+                <strong>${log.origen}</strong>
+              </div>
+              <span class="text-muted">${formatearFecha(log.fecha)}</span>
+            </div>
+            <p>${log.mensaje}</p>
+            <div class="log-meta">
+              ${log.usuario_nombre ? `<i class="fas fa-user"></i> ${log.usuario_nombre} | ` : ''}
+              ${log.ip_address ? `<i class="fas fa-network-wired"></i> ${log.ip_address} | ` : ''}
+              <i class="fas fa-hashtag"></i> Log #${log.id}
+            </div>
+            ${log.meta ? `
+              <div class="log-detail">
+                <strong>Metadata:</strong><br>
+                ${formatearMeta(log.meta)}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function cargarEstadisticas() {
+      try {
+        const response = await fetch('/api/logs/estadisticas?periodo=24h', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          mostrarEstadisticas(data.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    }
+
+    function mostrarEstadisticas(stats) {
+      const totales = stats.totales;
+      
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stat-box">
+          <h3>${totales.total || 0}</h3>
+          <p>Total (24h)</p>
+        </div>
+        <div class="stat-box">
+          <h3 style="color: #2196F3;">${totales.info || 0}</h3>
+          <p>Info</p>
+        </div>
+        <div class="stat-box">
+          <h3 style="color: #ff9800;">${totales.warn || 0}</h3>
+          <p>Warnings</p>
+        </div>
+        <div class="stat-box">
+          <h3 style="color: #f44336;">${totales.error || 0}</h3>
+          <p>Errores</p>
+        </div>
+        <div class="stat-box">
+          <h3 style="color: #9c27b0;">${totales.critical || 0}</h3>
+          <p>Críticos</p>
+        </div>
+        <div class="stat-box">
+          <h3 style="color: #607d8b;">${totales.debug || 0}</h3>
+          <p>Debug</p>
+        </div>
+      `;
+    }
+
+    async function mostrarLimpiar() {
+      const dias = prompt('¿Cuántos días de logs desea mantener?\n(Se eliminarán logs más antiguos)', '90');
+      
+      if (!dias || isNaN(dias)) return;
+
+      const confirmar = confirm(`¿Está seguro de eliminar logs con más de ${dias} días de antigüedad?`);
+      if (!confirmar) return;
+
+      try {
+        const response = await fetch('/api/logs/limpiar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ dias: parseInt(dias) })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert(`✅ Logs limpiados exitosamente\nRegistros eliminados: ${data.data.registros_eliminados}`);
+          await cargarLogs();
+          await cargarEstadisticas();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al limpiar logs: ' + error.message);
+      }
+    }
+
+    function exportarLogs() {
+      const nivel = document.getElementById('filtroNivel').value;
+      const origen = document.getElementById('filtroOrigen').value;
+      
+      let url = '/api/logs?limit=1000&';
+      if (nivel) url += `nivel=${nivel}&`;
+      if (origen) url += `origen=${origen}&`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const logs = data.data;
+            const csv = convertirACSV(logs);
+            descargarCSV(csv, 'logs_sistema.csv');
+          }
+        })
+        .catch(err => {
+          console.error('Error al exportar:', err);
+          alert('Error al exportar logs');
+        });
+    }
+
+    function convertirACSV(logs) {
+      const headers = ['ID', 'Fecha', 'Nivel', 'Origen', 'Mensaje', 'Usuario', 'IP'];
+      const rows = logs.map(log => [
+        log.id,
+        log.fecha,
+        log.nivel,
+        log.origen,
+        log.mensaje.replace(/,/g, ';'),
+        log.usuario_nombre || '',
+        log.ip_address || ''
+      ]);
+
+      return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+
+    function descargarCSV(csv, filename) {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    // ========== UTILIDADES ==========
+    function getIconoNivel(nivel) {
+      const iconos = {
+        'info': 'fa-info-circle',
+        'warn': 'fa-exclamation-triangle',
+        'error': 'fa-times-circle',
+        'debug': 'fa-bug',
+        'critical': 'fa-skull-crossbones'
+      };
+      return iconos[nivel] || 'fa-circle';
+    }
+
+    function formatearFecha(fecha) {
+      if (!fecha) return 'N/A';
+      const date = new Date(fecha);
+      const ahora = new Date();
+      const diffMs = ahora - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      
+      if (diffMins < 1) return 'Ahora mismo';
+      if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+      if (diffMins < 1440) return `Hace ${Math.floor(diffMins / 60)} hora${Math.floor(diffMins / 60) > 1 ? 's' : ''}`;
+      
+      return date.toLocaleString('es-ES');
+    }
+
+    function formatearMeta(meta) {
+      if (!meta) return '';
+      
+      try {
+        const obj = typeof meta === 'string' ? JSON.parse(meta) : meta;
+        return '<pre>' + JSON.stringify(obj, null, 2) + '</pre>';
+      } catch (e) {
+        return meta;
+      }
+    }
+  </script>
+
+</body>
+</html>

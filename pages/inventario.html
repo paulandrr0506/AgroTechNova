@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    /* Animaciones */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Estilos del modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 100%;
+      animation: slideDown 0.3s ease;
+    }
+
+    /* Tabs mejoradas */
+    .tab-btn {
+      padding: 12px 24px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      color: #666;
+      transition: all 0.3s;
+      position: relative;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .tab-btn:hover {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .tab-btn.active {
+      color: #4CAF50;
+      background: #e8f5e9;
+      border-bottom: 3px solid #4CAF50 !important;
+    }
+
+    /* Estilos de inputs con focus */
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #4CAF50 !important;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: #81c784;
+    }
+
+    /* Scrollbar personalizada */
+    .modal-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+      border-radius: 10px;
+    }
+
+    /* Badge de stock */
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stock-ok {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .stock-bajo {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .stock-critico {
+      background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+      color: white;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Tabla responsive */
+    @media (max-width: 768px) {
+      table {
+        font-size: 12px;
+      }
+      
+      th, td {
+        padding: 10px 8px !important;
+      }
+      
+      .modal-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header con navegación unificada -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1>📦 Gestión de Inventario</h1>
+        <div class="user-info">
+          <span id="userName">Usuario</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="agendaReuniones.html">Agenda</a>
+        
+        <!-- Dropdown: Gestión Financiera -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Gestión Financiera
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="recursos.html">Recursos</a>
+            <a href="presupuestos.html">Presupuestos</a>
+            <a href="gastos.html">Gastos</a>
+          </div>
+        </div>
+        
+        <!-- Dropdown: Inventario y Proveedores -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn active">
+            Inventario y Proveedores
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="proveedores.html">Proveedores</a>
+            <a href="productos.html">Productos</a>
+            <a href="inventario.html" class="active">Inventario</a>
+          </div>
+        </div>
+
+        <!-- Dropdown: Reportes y Documentación -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Reportes y Documentación
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="reportes.html">Reportes Financieros</a>
+            <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+            <a href="catalogo.html">Catálogo de Servicios</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span>›</span>
+      <span>Inventario</span>
+    </div>
+
+    <!-- Estadísticas Modernas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+      <!-- Total Productos -->
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 25px; color: white; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; font-size: 100px; opacity: 0.1;">📦</div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px; font-weight: 500;">Total Productos</div>
+          <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;" id="totalProductos">0</div>
+          <div style="font-size: 12px; opacity: 0.8;">📊 En inventario</div>
+        </div>
+      </div>
+
+      <!-- Valor Total -->
+      <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 15px; padding: 25px; color: white; box-shadow: 0 8px 16px rgba(240, 147, 251, 0.3); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; font-size: 100px; opacity: 0.1;">💰</div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px; font-weight: 500;">Valor Total Inventario</div>
+          <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;" id="valorTotal">$0</div>
+          <div style="font-size: 12px; opacity: 0.8;">💵 Inversión total</div>
+        </div>
+      </div>
+
+      <!-- Disponibles -->
+      <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 15px; padding: 25px; color: white; box-shadow: 0 8px 16px rgba(56, 239, 125, 0.3); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; font-size: 100px; opacity: 0.1;">✅</div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px; font-weight: 500;">Productos Disponibles</div>
+          <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;" id="totalDisponibles">0</div>
+          <div style="font-size: 12px; opacity: 0.8;">� Stock suficiente</div>
+        </div>
+      </div>
+
+      <!-- Stock Bajo -->
+      <div style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); border-radius: 15px; padding: 25px; color: white; box-shadow: 0 8px 16px rgba(255, 106, 0, 0.3); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; font-size: 100px; opacity: 0.1;">⚠️</div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px; font-weight: 500;">Stock Bajo</div>
+          <div style="font-size: 36px; font-weight: bold; margin-bottom: 8px;" id="totalStockBajo">0</div>
+          <div style="font-size: 12px; opacity: 0.8;">🔴 Requiere atención</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestañas de navegación mejoradas -->
+    <section style="background: white; padding: 0; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; background: #f8f9fa;">
+        <button class="tab-btn active" data-tab="productos">
+          <i class="fas fa-box"></i> Productos
+        </button>
+        <button class="tab-btn" data-tab="movimientos">
+          <i class="fas fa-exchange-alt"></i> Movimientos
+        </button>
+        <button class="tab-btn" data-tab="alertas">
+          <i class="fas fa-exclamation-triangle"></i> Alertas
+        </button>
+      </div>
+      <div style="padding: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="productos.html" class="btn-primary" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-box-open"></i> Ir a Catálogo de Productos
+        </a>
+        <button class="btn-success" id="btnRegistrarEntrada" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-arrow-down"></i> Registrar Entrada
+        </button>
+        <button class="btn-danger" id="btnRegistrarSalida" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-arrow-up"></i> Registrar Salida
+        </button>
+        <button class="btn btn-secondary" onclick="cargarDatos()" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
+      </div>
+    </section>
+
+    <!-- PESTAÑA: PRODUCTOS -->
+    <div id="tabProductos" class="tab-content">
+      <!-- Barra de búsqueda -->
+      <div style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="position: relative; max-width: 500px;">
+          <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+          <input type="text" id="searchProductos" placeholder="Buscar productos por nombre, tipo o categoría..." 
+                 style="width: 100%; padding: 12px 15px 12px 45px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.3s;"
+                 onkeyup="filtrarProductos()">
+        </div>
+      </div>
+
+      <!-- Tabla de productos mejorada -->
+      <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #2e7d32; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-boxes"></i> Listado de Productos
+          </h2>
+          <span id="contadorProductos" style="background: #e8f5e9; color: #2e7d32; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px;">
+            0 productos
+          </span>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%); color: white;">
+                <th style="padding: 15px; text-align: left; font-weight: 600; border-top-left-radius: 10px;">
+                  <i class="fas fa-tag"></i> Nombre
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-layer-group"></i> Tipo
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-folder"></i> Categoría
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-cubes"></i> Stock
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-chart-line"></i> Mínimo
+                </th>
+                <th style="padding: 15px; text-align: right; font-weight: 600;">
+                  <i class="fas fa-dollar-sign"></i> Costo Unit.
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-truck"></i> Proveedor
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-traffic-light"></i> Estado
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600; border-top-right-radius: 10px;">
+                  <i class="fas fa-cog"></i> Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tbodyProductos">
+              <tr>
+                <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                  <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                  <div>Cargando productos...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA: MOVIMIENTOS -->
+    <div id="tabMovimientos" class="tab-content hidden">
+      <!-- Tabla de movimientos mejorada -->
+      <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #2e7d32; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exchange-alt"></i> Historial de Movimientos
+          </h2>
+          <div style="display: flex; gap: 10px;">
+            <button onclick="filtrarMovimientos('todos')" id="btnFiltroTodos" 
+                    style="padding: 8px 16px; border: 2px solid #667eea; background: #667eea; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+              <i class="fas fa-list"></i> Todos
+            </button>
+            <button onclick="filtrarMovimientos('entrada')" id="btnFiltroEntradas"
+                    style="padding: 8px 16px; border: 2px solid #4CAF50; background: white; color: #4CAF50; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+              <i class="fas fa-arrow-down"></i> Entradas
+            </button>
+            <button onclick="filtrarMovimientos('salida')" id="btnFiltroSalidas"
+                    style="padding: 8px 16px; border: 2px solid #f44336; background: white; color: #f44336; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+              <i class="fas fa-arrow-up"></i> Salidas
+            </button>
+          </div>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <th style="padding: 15px; text-align: left; font-weight: 600; border-top-left-radius: 10px;">
+                  <i class="fas fa-calendar"></i> Fecha
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-exchange-alt"></i> Tipo
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-box"></i> Producto
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-hashtag"></i> Cantidad
+                </th>
+                <th style="padding: 15px; text-align: right; font-weight: 600;">
+                  <i class="fas fa-dollar-sign"></i> Costo Unit.
+                </th>
+                <th style="padding: 15px; text-align: right; font-weight: 600;">
+                  <i class="fas fa-calculator"></i> Costo Total
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-project-diagram"></i> Proyecto
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600; border-top-right-radius: 10px;">
+                  <i class="fas fa-user"></i> Usuario
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMovimientos">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                  <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                  <div>Cargando movimientos...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA: ALERTAS -->
+    <div id="tabAlertas" class="tab-content hidden">
+      <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #d32f2f; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle"></i> Productos con Stock Bajo
+          </h2>
+          <span id="contadorAlertas" style="background: #ffebee; color: #d32f2f; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px;">
+            0 alertas
+          </span>
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white;">
+                <th style="padding: 15px; text-align: left; font-weight: 600; border-top-left-radius: 10px;">
+                  <i class="fas fa-box"></i> Producto
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-cubes"></i> Stock Actual
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-chart-line"></i> Stock Mínimo
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600;">
+                  <i class="fas fa-minus-circle"></i> Diferencia
+                </th>
+                <th style="padding: 15px; text-align: left; font-weight: 600;">
+                  <i class="fas fa-truck"></i> Proveedor
+                </th>
+                <th style="padding: 15px; text-align: center; font-weight: 600; border-top-right-radius: 10px;">
+                  <i class="fas fa-cog"></i> Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAlertas">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+                  <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
+                  <div>Cargando alertas...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Registrar Entrada -->
+    <div id="modalEntrada" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+          <h2 style="margin: 0; color: #4CAF50; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-arrow-circle-down"></i> Registrar Entrada
+          </h2>
+          <button onclick="cerrarModalEntrada()" style="background: none; border: none; font-size: 28px; color: #999; cursor: pointer; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s;">&times;</button>
+        </div>
+
+        <form id="formEntrada">
+          <div style="display: grid; gap: 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-box" style="color: #4CAF50;"></i> Producto *
+                </label>
+                <select id="entrada_producto_id" required 
+                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white;">
+                  <option value="">Seleccione un producto...</option>
+                </select>
+              </div>
+
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-hashtag" style="color: #2196F3;"></i> Cantidad *
+                </label>
+                <input type="number" id="entrada_cantidad" min="1" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #FF9800;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-dollar-sign" style="color: #FF9800;"></i> Costo unitario *
+                </label>
+                <input type="number" id="entrada_costo_unitario" min="0" step="0.01" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;"
+                       placeholder="0.00">
+              </div>
+
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #9C27B0;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-calendar" style="color: #9C27B0;"></i> Fecha *
+                </label>
+                <input type="date" id="entrada_fecha" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+              </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #607D8B;">
+              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                <i class="fas fa-align-left" style="color: #607D8B;"></i> Descripción
+              </label>
+              <textarea id="entrada_descripcion" rows="2" 
+                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical;"
+                        placeholder="Ej: Compra a proveedor XYZ"></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 25px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalEntrada()" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-success" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-check"></i> Registrar Entrada
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal para Registrar Salida -->
+    <div id="modalSalida" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+          <h2 style="margin: 0; color: #f44336; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-arrow-circle-up"></i> Registrar Salida
+          </h2>
+          <button onclick="cerrarModalSalida()" style="background: none; border: none; font-size: 28px; color: #999; cursor: pointer; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.3s;">&times;</button>
+        </div>
+
+        <form id="formSalida">
+          <div style="display: grid; gap: 20px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #f44336;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-box" style="color: #f44336;"></i> Producto *
+                </label>
+                <select id="salida_producto_id" required 
+                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white;">
+                  <option value="">Seleccione un producto...</option>
+                </select>
+              </div>
+
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #FF5722;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-hashtag" style="color: #FF5722;"></i> Cantidad *
+                </label>
+                <input type="number" id="salida_cantidad" min="1" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-project-diagram" style="color: #2196F3;"></i> Proyecto
+                </label>
+                <select id="salida_proyecto_id" 
+                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white;">
+                  <option value="">Sin proyecto asociado</option>
+                </select>
+              </div>
+
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #9C27B0;">
+                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                  <i class="fas fa-calendar" style="color: #9C27B0;"></i> Fecha *
+                </label>
+                <input type="date" id="salida_fecha" required 
+                       style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+              </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #607D8B;">
+              <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px;">
+                <i class="fas fa-align-left" style="color: #607D8B;"></i> Descripción *
+              </label>
+              <textarea id="salida_descripcion" rows="2" required 
+                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical;"
+                        placeholder="Ej: Entrega para proyecto X"></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 25px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalSalida()" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-danger" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-check"></i> Registrar Salida
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón oculto para logout -->
+  <form id="logoutForm" method="POST" action="/api/auth/logout" style="display: none;">
+    <button id="logoutBtn" type="submit"></button>
+  </form>
+
+  <script>
+    let movimientosFiltrados = [];
+
+    // Verificar sesión al cargar
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return false;
+        }
+        const data = await response.json();
+        document.getElementById('userName').textContent = data.user.nombre;
+        return true;
+      } catch (error) {
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    // Cerrar sesión
+    async function cerrarSesion() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      } catch (error) {
+        window.location.href = '/login.html';
+      }
+    }
+
+    // Gestión de pestañas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Actualizar botones
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.borderBottom = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.borderBottom = '3px solid #4CAF50';
+
+        // Mostrar contenido
+        const tabName = btn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.remove('hidden');
+      });
+    });
+
+    // Cargar datos iniciales
+    async function cargarDatos() {
+      await Promise.all([
+        cargarProductos(),
+        cargarMovimientos(),
+        cargarAlertas(),
+        cargarProveedores(),
+        cargarProyectos()
+      ]);
+    }
+
+    // Cargar productos
+    async function cargarProductos() {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        
+        todosLosProductos = data.products || [];
+        mostrarProductos(todosLosProductos);
+        actualizarEstadisticas(todosLosProductos);
+        actualizarSelectoresProductos(todosLosProductos);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+        const tbody = document.getElementById('tbodyProductos');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 40px; color: #e74c3c;">
+              <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+              <div>Error al cargar productos</div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // Mostrar productos en la tabla
+    function mostrarProductos(productos) {
+      const tbody = document.getElementById('tbodyProductos');
+      const contador = document.getElementById('contadorProductos');
+      
+      contador.textContent = `${productos.length} producto${productos.length !== 1 ? 's' : ''}`;
+      
+      if (!productos || productos.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+              <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
+              <div style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">No hay productos registrados</div>
+              <div style="font-size: 14px;">Ve a <a href="productos.html" style="color: #4CAF50; font-weight: 600;">Catálogo de Productos</a> para crear productos</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = productos.map((p, index) => {
+        const stockBajo = p.stock_actual <= p.stock_minimo;
+        const stockCritico = p.stock_actual < (p.stock_minimo / 2);
+        
+        let stockBadge = '';
+        if (stockCritico) {
+          stockBadge = '<span class="stock-badge stock-critico"><i class="fas fa-exclamation-circle"></i> Crítico</span>';
+        } else if (stockBajo) {
+          stockBadge = '<span class="stock-badge stock-bajo"><i class="fas fa-exclamation-triangle"></i> Bajo</span>';
+        } else {
+          stockBadge = '<span class="stock-badge stock-ok"><i class="fas fa-check-circle"></i> OK</span>';
+        }
+        
+        const rowStyle = index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;';
+        const alertStyle = stockBajo ? 'border-left: 4px solid #f44336;' : 'border-left: 4px solid transparent;';
+        
+        return `
+          <tr style="${rowStyle} ${alertStyle} transition: all 0.3s;" 
+              onmouseover="this.style.background='#e8f5e9'; this.style.transform='scale(1.01)';" 
+              onmouseout="this.style.background='${index % 2 === 0 ? '#f8f9fa' : 'white'}'; this.style.transform='scale(1)';">
+            <td style="padding: 18px 15px; font-weight: 600; color: #333;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">
+                  ${p.nombre.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div>${p.nombre}</div>
+                  ${p.es_organico ? '<div style="font-size: 11px; color: #4CAF50; font-weight: 600;"><i class="fas fa-leaf"></i> Orgánico</div>' : ''}
+                </div>
+              </div>
+            </td>
+            <td style="padding: 18px 15px; color: #666;">
+              <span style="background: #e3f2fd; color: #1976d2; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                ${p.tipo}
+              </span>
+            </td>
+            <td style="padding: 18px 15px; color: #666;">${p.categoria || '<span style="color: #ccc;">N/A</span>'}</td>
+            <td style="padding: 18px 15px; text-align: center;">
+              <div style="font-weight: bold; font-size: 16px; ${stockBajo ? 'color: #f44336;' : 'color: #4CAF50;'}">${p.stock_actual}</div>
+              <div style="font-size: 11px; color: #999;">${p.unidad}</div>
+            </td>
+            <td style="padding: 18px 15px; text-align: center; color: #666;">
+              <div style="font-weight: 600;">${p.stock_minimo}</div>
+              <div style="font-size: 11px; color: #999;">${p.unidad}</div>
+            </td>
+            <td style="padding: 18px 15px; text-align: right; font-family: monospace; color: #4CAF50; font-weight: 600; font-size: 15px;">
+              $${parseFloat(p.costo_unitario).toFixed(2)}
+            </td>
+            <td style="padding: 18px 15px; color: #666;">
+              ${p.proveedor_nombre ? `<div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-truck" style="color: #607D8B;"></i>${p.proveedor_nombre}</div>` : '<span style="color: #ccc;">Sin proveedor</span>'}
+            </td>
+            <td style="padding: 18px 15px; text-align: center;">${stockBadge}</td>
+            <td style="padding: 18px 15px; text-align: center;">
+              <a href="productos.html" 
+                      style="text-decoration: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s;"
+                      onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)';"
+                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <i class="fas fa-box"></i> Ver en Productos
+              </a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Actualizar estadísticas
+    function actualizarEstadisticas(productos) {
+      const total = productos.length;
+      const disponibles = productos.filter(p => p.estado === 'disponible').length;
+      const stockBajo = productos.filter(p => p.stock_actual <= p.stock_minimo).length;
+      const valorTotal = productos.reduce((sum, p) => sum + (p.stock_actual * p.costo_unitario), 0);
+
+      document.getElementById('totalProductos').textContent = total;
+      document.getElementById('totalDisponibles').textContent = disponibles;
+      document.getElementById('totalStockBajo').textContent = stockBajo;
+      document.getElementById('valorTotal').textContent = `$${valorTotal.toFixed(2)}`;
+    }
+
+    // Actualizar selectores de productos
+    function actualizarSelectoresProductos(productos) {
+      const htmlOptions = productos.map(p => 
+        `<option value="${p.id}">${p.nombre} (Stock: ${p.stock_actual} ${p.unidad})</option>`
+      ).join('');
+      
+      document.getElementById('entrada_producto_id').innerHTML = 
+        '<option value="">Seleccione un producto...</option>' + htmlOptions;
+      document.getElementById('salida_producto_id').innerHTML = 
+        '<option value="">Seleccione un producto...</option>' + htmlOptions;
+    }
+
+    // Cargar proveedores
+    async function cargarProveedores() {
+      try {
+        const response = await fetch('/api/providers/active');
+        const data = await response.json();
+        
+        if (data.providers) {
+          const htmlOptions = data.providers.map(p => 
+            `<option value="${p.id}">${p.nombre}</option>`
+          ).join('');
+          
+          document.getElementById('producto_proveedor_id').innerHTML = 
+            '<option value="">Sin proveedor</option>' + htmlOptions;
+        }
+      } catch (error) {
+        console.error('Error al cargar proveedores:', error);
+      }
+    }
+
+    // Cargar proyectos
+    async function cargarProyectos() {
+      try {
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+        
+        if (data.projects) {
+          const htmlOptions = data.projects.map(p => 
+            `<option value="${p.id}">${p.nombre}</option>`
+          ).join('');
+          
+          document.getElementById('salida_proyecto_id').innerHTML = 
+            '<option value="">Sin proyecto asociado</option>' + htmlOptions;
+        }
+      } catch (error) {
+        console.error('Error al cargar proyectos:', error);
+      }
+    }
+
+    // Cargar movimientos
+    async function cargarMovimientos() {
+      try {
+        const response = await fetch('/api/inventory');
+        const data = await response.json();
+        
+        movimientosFiltrados = data.movements || [];
+        mostrarMovimientos(movimientosFiltrados);
+      } catch (error) {
+        console.error('Error al cargar movimientos:', error);
+      }
+    }
+
+    // Mostrar movimientos
+    function mostrarMovimientos(movimientos) {
+      const tbody = document.getElementById('tbodyMovimientos');
+      
+      if (movimientos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay movimientos registrados</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = movimientos.map(m => `
+        <tr>
+          <td>${m.fecha}</td>
+          <td><span class="badge badge-${m.tipo === 'entrada' ? 'success' : 'danger'}">${m.tipo}</span></td>
+          <td>${m.producto_nombre}</td>
+          <td>${m.cantidad} ${m.unidad}</td>
+          <td>$${parseFloat(m.costo_unitario || 0).toFixed(2)}</td>
+          <td>$${parseFloat(m.costo_total || 0).toFixed(2)}</td>
+          <td>${m.proyecto_nombre || 'N/A'}</td>
+          <td>${m.usuario_nombre || 'Sistema'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Filtrar movimientos
+    function filtrarMovimientos(tipo) {
+      if (tipo === 'todos') {
+        cargarMovimientos();
+      } else {
+        const filtrados = movimientosFiltrados.filter(m => m.tipo === tipo);
+        mostrarMovimientos(filtrados);
+      }
+    }
+
+    // Cargar alertas
+    async function cargarAlertas() {
+      try {
+        const response = await fetch('/api/products/low-stock');
+        const data = await response.json();
+        
+        const tbody = document.getElementById('tbodyAlertas');
+        
+        if (!data.products || data.products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="color: #28a745;">✅ No hay productos con stock bajo</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.products.map(p => `
+          <tr style="background-color: #fff3cd;">
+            <td>${p.nombre}</td>
+            <td style="color: #dc3545; font-weight: bold;">${p.stock_actual} ${p.unidad}</td>
+            <td>${p.stock_minimo} ${p.unidad}</td>
+            <td style="color: #dc3545;">${p.stock_minimo - p.stock_actual} ${p.unidad}</td>
+            <td>${p.proveedor_nombre || 'Sin proveedor'}</td>
+            <td>
+              <button class="btn-small btn-success" onclick="registrarEntradaRapida(${p.id})">Registrar Entrada</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error al cargar alertas:', error);
+      }
+    }
+
+    // Variables globales para productos
+    let todosLosProductos = [];
+    let todosLosMovimientos = [];
+    let filtroActualMovimientos = 'todos';
+
+    // Función para mostrar notificaciones
+    function mostrarNotificacion(mensaje, tipo) {
+      const notificacion = document.createElement('div');
+      const icono = tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+      const color = tipo === 'success' ? 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' : 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)';
+      
+      notificacion.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${color};
+        color: white;
+        padding: 18px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        animation: slideInRight 0.4s ease;
+        max-width: 400px;
+      `;
+      
+      notificacion.innerHTML = `
+        <i class="fas ${icono}" style="font-size: 20px;"></i>
+        <span>${mensaje}</span>
+      `;
+      
+      document.body.appendChild(notificacion);
+      
+      setTimeout(() => {
+        notificacion.style.animation = 'slideOutRight 0.4s ease';
+        setTimeout(() => notificacion.remove(), 400);
+      }, 3000);
+    }
+
+    // Funciones para cerrar modales
+    function cerrarModalEntrada() {
+      document.getElementById('modalEntrada').style.display = 'none';
+      document.getElementById('formEntrada').reset();
+    }
+
+    function cerrarModalSalida() {
+      document.getElementById('modalSalida').style.display = 'none';
+      document.getElementById('formSalida').reset();
+    }
+
+    // Cerrar modales al hacer clic fuera
+    window.onclick = function(event) {
+      const modalProducto = document.getElementById('modalProducto');
+      const modalEntrada = document.getElementById('modalEntrada');
+      const modalSalida = document.getElementById('modalSalida');
+      
+      if (event.target === modalProducto) cerrarModalProducto();
+      if (event.target === modalEntrada) cerrarModalEntrada();
+      if (event.target === modalSalida) cerrarModalSalida();
+    };
+
+    // Filtrar productos
+    function filtrarProductos() {
+      const searchTerm = document.getElementById('searchProductos').value.toLowerCase().trim();
+      
+      if (!searchTerm) {
+        mostrarProductos(todosLosProductos);
+        return;
+      }
+
+      const productosFiltrados = todosLosProductos.filter(producto => {
+        return (
+          producto.nombre.toLowerCase().includes(searchTerm) ||
+          (producto.tipo && producto.tipo.toLowerCase().includes(searchTerm)) ||
+          (producto.categoria && producto.categoria.toLowerCase().includes(searchTerm))
+        );
+      });
+
+      mostrarProductos(productosFiltrados);
+    }
+
+    // Botones principales
+    document.getElementById('btnRegistrarEntrada').addEventListener('click', () => {
+      document.getElementById('formEntrada').reset();
+      document.getElementById('entrada_fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modalEntrada').style.display = 'flex';
+      document.querySelectorAll('.tab-btn')[1].click();
+    });
+
+    document.getElementById('btnRegistrarSalida').addEventListener('click', () => {
+      document.getElementById('formSalida').reset();
+      document.getElementById('salida_fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modalSalida').style.display = 'flex';
+      document.querySelectorAll('.tab-btn')[1].click();
+    });
+
+    // Guardar entrada
+    document.getElementById('formEntrada').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const entrada = {
+        producto_id: parseInt(document.getElementById('entrada_producto_id').value),
+        cantidad: parseInt(document.getElementById('entrada_cantidad').value),
+        costo_unitario: parseFloat(document.getElementById('entrada_costo_unitario').value),
+        fecha: document.getElementById('entrada_fecha').value,
+        descripcion: document.getElementById('entrada_descripcion').value
+      };
+
+      try {
+        const response = await fetch('/api/inventory/entrada', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entrada)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Entrada registrada exitosamente');
+          document.getElementById('formEntradaContainer').classList.add('hidden');
+          await cargarDatos();
+        } else {
+          alert(data.message || 'Error al registrar entrada');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al registrar entrada');
+      }
+    });
+
+    // Guardar salida
+    document.getElementById('formSalida').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const salida = {
+        producto_id: parseInt(document.getElementById('salida_producto_id').value),
+        cantidad: parseInt(document.getElementById('salida_cantidad').value),
+        proyecto_id: document.getElementById('salida_proyecto_id').value || null,
+        fecha: document.getElementById('salida_fecha').value,
+        descripcion: document.getElementById('salida_descripcion').value
+      };
+
+      try {
+        const response = await fetch('/api/inventory/salida', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(salida)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Salida registrada exitosamente');
+          document.getElementById('formSalidaContainer').classList.add('hidden');
+          await cargarDatos();
+        } else {
+          alert(data.message || 'Error al registrar salida');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al registrar salida');
+      }
+    });
+
+    // Editar producto
+    // Registrar entrada rápida desde alertas
+    function registrarEntradaRapida(productoId) {
+      document.getElementById('entrada_producto_id').value = productoId;
+      document.getElementById('btnRegistrarEntrada').click();
+    }
+
+    // Inicializar
+    window.onload = async () => {
+      if (await verificarSesion()) {
+        await cargarDatos();
+        // Establecer fecha por defecto
+        document.getElementById('entrada_fecha').value = new Date().toISOString().split('T')[0];
+        document.getElementById('salida_fecha').value = new Date().toISOString().split('T')[0];
+      }
+    };
+
+    // Manejo del logout
+    document.getElementById('logoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      } catch (error) {
+        window.location.href = '/login.html';
+      }
+    });
+
+    // Funcionalidad de dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+      
+      dropdownButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const dropdown = this.parentElement;
+          const isOpen = dropdown.classList.contains('open');
+          
+          // Cerrar todos los dropdowns
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+          
+          // Abrir/cerrar el dropdown actual
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        });
+      });
+      
+      // Cerrar dropdowns al hacer clic fuera
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown').forEach(dd => {
+          dd.classList.remove('open');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

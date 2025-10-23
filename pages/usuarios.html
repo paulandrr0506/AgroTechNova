@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    /* Badges específicos de roles */
+    .badge-admin {
+      background: #ff5722;
+      color: white;
+    }
+
+    .badge-asesor {
+      background: #2196f3;
+      color: white;
+    }
+
+    .badge-productor {
+      background: #4caf50;
+      color: white;
+    }
+
+    /* Mensajes */
+    .mensaje {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+      display: none;
+      border-left: 4px solid;
+    }
+
+    .mensaje-exito {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-color: #2e7d32;
+    }
+
+    .mensaje-error {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #c62828;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .modal-header {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 50px;
+      color: #1e3c72;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header con navegación unificada -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1>👥 Gestión de Usuarios</h1>
+        <div class="user-info">
+          <span id="usuarioNombre">Administrador</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html" class="active">Usuarios</a>
+        <a href="agendaReuniones.html">Agenda</a>
+        
+        <!-- Dropdown: Gestión Financiera -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Gestión Financiera
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="recursos.html">Recursos</a>
+            <a href="presupuestos.html">Presupuestos</a>
+            <a href="gastos.html">Gastos</a>
+          </div>
+        </div>
+        
+        <!-- Dropdown: Inventario y Proveedores -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Inventario y Proveedores
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="proveedores.html">Proveedores</a>
+            <a href="productos.html">Productos</a>
+            <a href="inventario.html">Inventario</a>
+          </div>
+        </div>
+
+        <!-- Dropdown: Reportes y Documentación -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Reportes y Documentación
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="reportes.html">Reportes Financieros</a>
+            <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+            <a href="catalogo.html">Catálogo de Servicios</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Sección de Acciones -->
+    <section style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <button class="btn-primary" onclick="abrirModalCrear()">➕ Crear Usuario</button>
+    </section>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <!-- Sección de Usuarios -->
+    <section>
+      <h2>📋 Lista de Usuarios</h2>
+      <div class="loader" id="loader">Cargando usuarios...</div>
+
+      <table id="tabla-usuarios" style="display: none;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Último Acceso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usuarios-body">
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Modal Crear/Editar Usuario -->
+  <div id="modalUsuario" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-titulo">Crear Usuario</h2>
+      </div>
+      <form id="formUsuario">
+        <input type="hidden" id="usuario-id">
+        
+        <div class="form-group">
+          <label for="usuario-nombre">Nombre Completo *</label>
+          <input type="text" id="usuario-nombre" required minlength="3">
+        </div>
+
+        <div class="form-group">
+          <label for="usuario-email">Correo Electrónico *</label>
+          <input type="email" id="usuario-email" required>
+        </div>
+
+        <div class="form-group" id="password-group">
+          <label for="usuario-password">Contraseña *</label>
+          <input type="password" id="usuario-password" minlength="8">
+          <small style="color: #666;">Mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula y 1 carácter especial</small>
+        </div>
+
+        <div class="form-group">
+          <label for="usuario-rol">Rol *</label>
+          <select id="usuario-rol" required>
+            <option value="">Seleccionar rol...</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar</button>
+          <button type="button" class="btn btn-secondary" onclick="cerrarModal()" style="flex: 1;">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let roles = [];
+    let usuarios = [];
+
+    // Verificar autenticación al cargar
+    verificarAuth();
+
+    async function verificarAuth() {
+      try {
+        const response = await fetch('/api/auth/session', { credentials: 'include' });
+        const data = await response.json();
+
+        if (!data.authenticated) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (data.user.rol !== 'administrador') {
+          mostrarMensaje('Acceso denegado. Solo administradores.', 'error');
+          setTimeout(() => window.location.href = 'dashboard.html', 2000);
+          return;
+        }
+
+        // Solo mostrar el nombre del usuario, sin email
+        document.getElementById('usuarioNombre').textContent = data.user.nombre;
+
+        // Cargar datos
+        await cargarRoles();
+        await cargarUsuarios();
+
+      } catch (error) {
+        console.error('Error verificando auth:', error);
+        window.location.href = 'login.html';
+      }
+    }
+
+    async function cargarRoles() {
+      try {
+        const response = await fetch('/api/roles', { credentials: 'include' });
+        const data = await response.json();
+        roles = data.roles || [];
+
+        const select = document.getElementById('usuario-rol');
+        select.innerHTML = '<option value="">Seleccionar rol...</option>';
+        roles.forEach(rol => {
+          select.innerHTML += `<option value="${rol.id}">${rol.nombre}</option>`;
+        });
+      } catch (error) {
+        console.error('Error cargando roles:', error);
+      }
+    }
+
+    async function cargarUsuarios() {
+      try {
+        const response = await fetch('/api/users', { credentials: 'include' });
+        const data = await response.json();
+        usuarios = data.users || [];
+
+        mostrarUsuarios();
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('tabla-usuarios').style.display = 'table';
+
+      } catch (error) {
+        console.error('Error cargando usuarios:', error);
+        mostrarMensaje('Error al cargar usuarios', 'error');
+      }
+    }
+
+    function mostrarUsuarios() {
+      const tbody = document.getElementById('usuarios-body');
+      tbody.innerHTML = '';
+
+      usuarios.forEach(user => {
+        const rolClass = `badge-${user.rol_nombre}`;
+        const estadoClass = user.estado === 'activo' ? 'badge-activo' : 'badge-inactivo';
+        const ultimoAcceso = user.ultimo_acceso ? 
+          new Date(user.ultimo_acceso).toLocaleString('es-ES') : 'Nunca';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.nombre}</td>
+            <td>${user.email}</td>
+            <td><span class="badge ${rolClass}">${user.rol_nombre}</span></td>
+            <td><span class="badge ${estadoClass}">${user.estado}</span></td>
+            <td>${ultimoAcceso}</td>
+            <td>
+              <button class="btn btn-secondary" onclick="editarUsuario(${user.id})" style="padding: 5px 10px; margin: 2px;">
+                ✏️ Editar
+              </button>
+              ${user.id !== 1 ? `
+                <button class="btn ${user.estado === 'activo' ? 'btn-warning' : 'btn-primary'}" 
+                        onclick="cambiarEstado(${user.id}, '${user.estado === 'activo' ? 'inactivo' : 'activo'}')"
+                        style="padding: 5px 10px; margin: 2px;">
+                  ${user.estado === 'activo' ? '🔒 Desactivar' : '✅ Activar'}
+                </button>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function abrirModalCrear() {
+      document.getElementById('modal-titulo').textContent = 'Crear Usuario';
+      document.getElementById('formUsuario').reset();
+      document.getElementById('usuario-id').value = '';
+      document.getElementById('password-group').style.display = 'block';
+      document.getElementById('usuario-password').required = true;
+      document.getElementById('modalUsuario').style.display = 'block';
+    }
+
+    function editarUsuario(userId) {
+      const usuario = usuarios.find(u => u.id === userId);
+      if (!usuario) return;
+
+      document.getElementById('modal-titulo').textContent = 'Editar Usuario';
+      document.getElementById('usuario-id').value = usuario.id;
+      document.getElementById('usuario-nombre').value = usuario.nombre;
+      document.getElementById('usuario-email').value = usuario.email;
+      document.getElementById('usuario-rol').value = usuario.rol_id;
+      document.getElementById('password-group').style.display = 'none';
+      document.getElementById('usuario-password').required = false;
+      document.getElementById('modalUsuario').style.display = 'block';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalUsuario').style.display = 'none';
+    }
+
+    document.getElementById('formUsuario').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const userId = document.getElementById('usuario-id').value;
+      const esEdicion = userId !== '';
+
+      const datos = {
+        nombre: document.getElementById('usuario-nombre').value,
+        email: document.getElementById('usuario-email').value,
+        rol_id: parseInt(document.getElementById('usuario-rol').value)
+      };
+
+      if (!esEdicion) {
+        datos.password = document.getElementById('usuario-password').value;
+      }
+
+      try {
+        const url = esEdicion ? `/api/users/${userId}` : '/api/users';
+        const method = esEdicion ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(datos)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          mostrarMensaje(data.message || 'Usuario guardado exitosamente', 'exito');
+          cerrarModal();
+          await cargarUsuarios();
+        } else {
+          mostrarMensaje(data.error || 'Error al guardar usuario', 'error');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        mostrarMensaje('Error al conectar con el servidor', 'error');
+      }
+    });
+
+    async function cambiarEstado(userId, nuevoEstado) {
+      if (!confirm(`¿Está seguro de ${nuevoEstado === 'activo' ? 'activar' : 'desactivar'} este usuario?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/users/${userId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ estado: nuevoEstado })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          mostrarMensaje(data.message, 'exito');
+          await cargarUsuarios();
+        } else {
+          mostrarMensaje(data.error, 'error');
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+        mostrarMensaje('Error al cambiar estado', 'error');
+      }
+    }
+
+    async function cerrarSesion() {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error('Error cerrando sesión:', error);
+      }
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      const mensaje = document.getElementById('mensaje');
+      mensaje.textContent = texto;
+      mensaje.className = `mensaje mensaje-${tipo}`;
+      mensaje.style.display = 'block';
+      
+      setTimeout(() => {
+        mensaje.style.display = 'none';
+      }, 5000);
+    }
+
+    // Cerrar modal al hacer clic fuera
+    window.onclick = function(event) {
+      const modal = document.getElementById('modalUsuario');
+      if (event.target === modal) {
+        cerrarModal();
+      }
+    };
+
+    // Funcionalidad de dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+      
+      dropdownButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const dropdown = this.parentElement;
+          const isOpen = dropdown.classList.contains('open');
+          
+          // Cerrar todos los dropdowns
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+          
+          // Abrir/cerrar el dropdown actual
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        });
+      });
+      
+      // Cerrar dropdowns al hacer clic fuera
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-dropdown')) {
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

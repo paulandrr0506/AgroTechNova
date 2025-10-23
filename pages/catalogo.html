@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Servicios - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    .catalogo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .servicio-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .servicio-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border-color: #2e7d32;
+    }
+
+    .servicio-header {
+      background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .servicio-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .servicio-titulo {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .servicio-categoria {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .servicio-body {
+      padding: 25px;
+    }
+
+    .servicio-descripcion {
+      color: #666;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      min-height: 80px;
+    }
+
+    .servicio-caracteristicas {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0;
+    }
+
+    .servicio-caracteristicas li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+    }
+
+    .servicio-caracteristicas li:last-child {
+      border-bottom: none;
+    }
+
+    .servicio-caracteristicas i {
+      color: #2e7d32;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .servicio-precio {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .servicio-precio-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .servicio-precio-valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .servicio-footer {
+      padding: 0 25px 25px;
+    }
+
+    .filtros-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .filtros-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 15px;
+      align-items: end;
+    }
+
+    .categoria-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-right: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .categoria-badge.consultoria {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .categoria-badge.implementacion {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .categoria-badge.capacitacion {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .categoria-badge.soporte {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .categoria-badge:hover,
+    .categoria-badge.active {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1>🌿 Catálogo de Servicios</h1>
+        <div class="user-info">
+          <span id="userName">Usuario</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="agendaReuniones.html">Agenda</a>
+        
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Gestión Financiera
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="recursos.html">Recursos</a>
+            <a href="presupuestos.html">Presupuestos</a>
+            <a href="gastos.html">Gastos</a>
+          </div>
+        </div>
+        
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Inventario y Proveedores
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="proveedores.html">Proveedores</a>
+            <a href="productos.html">Productos</a>
+            <a href="inventario.html">Inventario</a>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn active">
+            Reportes y Documentación
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="reportes.html">Reportes Financieros</a>
+            <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+            <a href="catalogo.html" class="active">Catálogo de Servicios</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span>›</span>
+      <span>Catálogo de Servicios</span>
+    </div>
+
+    <!-- Introducción -->
+    <section style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); color: white; padding: 40px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 32px; margin-bottom: 15px;">Soluciones Integrales para Empresas Agrícolas</h2>
+      <p style="font-size: 18px; line-height: 1.6; opacity: 0.95;">
+        Ofrecemos servicios especializados en gestión de proyectos, optimización de recursos y transformación digital 
+        para el sector agroindustrial. Potenciamos tu negocio con tecnología de vanguardia.
+      </p>
+    </section>
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+      <div class="filtros-grid">
+        <div class="form-group" style="margin: 0;">
+          <label>Buscar Servicio</label>
+          <input type="text" id="searchInput" placeholder="Nombre o descripción..." style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+        </div>
+        
+        <div class="form-group" style="margin: 0;">
+          <label>Ordenar Por</label>
+          <select id="ordenSelect" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+            <option value="nombre">Nombre</option>
+            <option value="precio-asc">Precio (menor a mayor)</option>
+            <option value="precio-desc">Precio (mayor a menor)</option>
+          </select>
+        </div>
+        
+        <button onclick="limpiarFiltros()" class="btn-secondary">🔄 Limpiar</button>
+      </div>
+      
+      <div style="margin-top: 15px;">
+        <strong style="color: #666; font-size: 14px;">Filtrar por categoría:</strong>
+        <div style="margin-top: 10px;">
+          <span class="categoria-badge consultoria active" onclick="filtrarCategoria('consultoria')">
+            <i class="fas fa-chart-line"></i> Consultoría
+          </span>
+          <span class="categoria-badge implementacion active" onclick="filtrarCategoria('implementacion')">
+            <i class="fas fa-cogs"></i> Implementación
+          </span>
+          <span class="categoria-badge capacitacion active" onclick="filtrarCategoria('capacitacion')">
+            <i class="fas fa-graduation-cap"></i> Capacitación
+          </span>
+          <span class="categoria-badge soporte active" onclick="filtrarCategoria('soporte')">
+            <i class="fas fa-life-ring"></i> Soporte
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Catálogo de Servicios -->
+    <div id="catalogoGrid" class="catalogo-grid">
+      <!-- Los servicios se cargarán aquí dinámicamente -->
+    </div>
+
+    <!-- Mensaje vacío -->
+    <div id="mensajeVacio" class="hidden text-center" style="padding: 60px; background: white; border-radius: 10px;">
+      <i class="fas fa-search" style="font-size: 64px; color: #ccc; margin-bottom: 20px;"></i>
+      <h3 style="color: #999;">No se encontraron servicios</h3>
+      <p style="color: #bbb;">Intenta ajustar los filtros de búsqueda</p>
+    </div>
+  </div>
+
+  <script>
+    // Datos de servicios (en producción vendría del backend)
+    const servicios = [
+      {
+        id: 1,
+        nombre: 'Consultoría en Gestión de Proyectos',
+        categoria: 'consultoria',
+        icono: 'fa-chart-line',
+        descripcion: 'Asesoría especializada para optimizar la planificación, ejecución y control de proyectos agrícolas.',
+        caracteristicas: [
+          'Análisis de viabilidad',
+          'Planificación estratégica',
+          'Seguimiento de KPIs',
+          'Informes mensuales'
+        ],
+        precio: 2500000,
+        unidad: 'mes'
+      },
+      {
+        id: 2,
+        nombre: 'Implementación de Sistema ERP',
+        categoria: 'implementacion',
+        icono: 'fa-cogs',
+        descripcion: 'Instalación y configuración de sistema integral para gestión empresarial del sector agroindustrial.',
+        caracteristicas: [
+          'Instalación completa',
+          'Migración de datos',
+          'Personalización',
+          'Pruebas y validación'
+        ],
+        precio: 15000000,
+        unidad: 'proyecto'
+      },
+      {
+        id: 3,
+        nombre: 'Capacitación en Software Agrícola',
+        categoria: 'capacitacion',
+        icono: 'fa-graduation-cap',
+        descripcion: 'Programas de formación para equipos en el uso de herramientas tecnológicas especializadas.',
+        caracteristicas: [
+          'Talleres prácticos',
+          'Material didáctico',
+          'Certificación',
+          'Soporte post-capacitación'
+        ],
+        precio: 1200000,
+        unidad: 'sesión'
+      },
+      {
+        id: 4,
+        nombre: 'Soporte Técnico Premium',
+        categoria: 'soporte',
+        icono: 'fa-life-ring',
+        descripcion: 'Asistencia técnica continua con respuesta prioritaria para sistemas críticos de producción.',
+        caracteristicas: [
+          'Soporte 24/7',
+          'Respuesta en 2 horas',
+          'Actualizaciones incluidas',
+          'Consultor dedicado'
+        ],
+        precio: 3500000,
+        unidad: 'mes'
+      },
+      {
+        id: 5,
+        nombre: 'Auditoría de Procesos Productivos',
+        categoria: 'consultoria',
+        icono: 'fa-search-dollar',
+        descripcion: 'Evaluación exhaustiva de procesos para identificar oportunidades de mejora y reducción de costos.',
+        caracteristicas: [
+          'Análisis completo',
+          'Recomendaciones',
+          'Plan de acción',
+          'Seguimiento trimestral'
+        ],
+        precio: 4000000,
+        unidad: 'auditoría'
+      },
+      {
+        id: 6,
+        nombre: 'Desarrollo de Dashboard Personalizado',
+        categoria: 'implementacion',
+        icono: 'fa-tachometer-alt',
+        descripcion: 'Creación de paneles de control adaptados a las métricas y necesidades específicas de tu operación.',
+        caracteristicas: [
+          'Diseño a medida',
+          'Integración de datos',
+          'Actualización en tiempo real',
+          'Exportación de reportes'
+        ],
+        precio: 5500000,
+        unidad: 'proyecto'
+      },
+      {
+        id: 7,
+        nombre: 'Optimización de Inventarios',
+        categoria: 'consultoria',
+        icono: 'fa-boxes',
+        descripcion: 'Estrategias para gestión eficiente de inventarios, reduciendo costos de almacenamiento.',
+        caracteristicas: [
+          'Análisis de rotación',
+          'Punto de reorden',
+          'Sistema de alertas',
+          'Reportes mensuales'
+        ],
+        precio: 1800000,
+        unidad: 'mes'
+      },
+      {
+        id: 8,
+        nombre: 'Integración con Proveedores',
+        categoria: 'implementacion',
+        icono: 'fa-link',
+        descripcion: 'Conexión automática con sistemas de proveedores para pedidos y facturación electrónica.',
+        caracteristicas: [
+          'API personalizada',
+          'Sincronización automática',
+          'Trazabilidad completa',
+          'Soporte técnico'
+        ],
+        precio: 7000000,
+        unidad: 'proyecto'
+      },
+      {
+        id: 9,
+        nombre: 'Taller de Agricultura 4.0',
+        categoria: 'capacitacion',
+        icono: 'fa-leaf',
+        descripcion: 'Formación en tecnologías IoT, sensores y análisis de datos para agricultura inteligente.',
+        caracteristicas: [
+          'Teoría y práctica',
+          'Casos reales',
+          'Kit de sensores',
+          'Certificado digital'
+        ],
+        precio: 2000000,
+        unidad: 'taller'
+      },
+      {
+        id: 10,
+        nombre: 'Mantenimiento Preventivo Anual',
+        categoria: 'soporte',
+        icono: 'fa-tools',
+        descripcion: 'Plan de mantenimiento programado para sistemas, bases de datos y servidores.',
+        caracteristicas: [
+          'Revisiones trimestrales',
+          'Backups automáticos',
+          'Optimización de BD',
+          'Actualizaciones'
+        ],
+        precio: 8000000,
+        unidad: 'año'
+      },
+      {
+        id: 11,
+        nombre: 'Análisis de Big Data Agrícola',
+        categoria: 'consultoria',
+        icono: 'fa-database',
+        descripcion: 'Procesamiento y análisis de grandes volúmenes de datos para toma de decisiones estratégicas.',
+        caracteristicas: [
+          'Modelos predictivos',
+          'Visualizaciones avanzadas',
+          'Insights accionables',
+          'Reportes ejecutivos'
+        ],
+        precio: 6500000,
+        unidad: 'proyecto'
+      },
+      {
+        id: 12,
+        nombre: 'App Móvil de Campo',
+        categoria: 'implementacion',
+        icono: 'fa-mobile-alt',
+        descripcion: 'Desarrollo de aplicación móvil para registro de actividades en campo y sincronización con ERP.',
+        caracteristicas: [
+          'iOS y Android',
+          'Modo offline',
+          'GPS integrado',
+          'Captura de fotos'
+        ],
+        precio: 12000000,
+        unidad: 'proyecto'
+      }
+    ];
+
+    let serviciosFiltrados = [...servicios];
+    let categoriasActivas = new Set(['consultoria', 'implementacion', 'capacitacion', 'soporte']);
+
+    // Verificar sesión
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return false;
+        }
+        const data = await response.json();
+        document.getElementById('userName').textContent = data.user.nombre;
+        return true;
+      } catch (error) {
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    function cerrarSesion() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = '/login.html');
+    }
+
+    // Renderizar servicios
+    function renderizarServicios(lista) {
+      const grid = document.getElementById('catalogoGrid');
+      const mensajeVacio = document.getElementById('mensajeVacio');
+
+      if (lista.length === 0) {
+        grid.innerHTML = '';
+        mensajeVacio.classList.remove('hidden');
+        return;
+      }
+
+      mensajeVacio.classList.add('hidden');
+
+      grid.innerHTML = lista.map(s => `
+        <div class="servicio-card">
+          <div class="servicio-header">
+            <div class="servicio-icon">
+              <i class="fas ${s.icono}"></i>
+            </div>
+            <h3 class="servicio-titulo">${s.nombre}</h3>
+            <span class="servicio-categoria">${getCategoriaTexto(s.categoria)}</span>
+          </div>
+          
+          <div class="servicio-body">
+            <p class="servicio-descripcion">${s.descripcion}</p>
+            
+            <ul class="servicio-caracteristicas">
+              ${s.caracteristicas.map(c => `
+                <li><i class="fas fa-check-circle"></i> ${c}</li>
+              `).join('')}
+            </ul>
+            
+            <div class="servicio-precio">
+              <div class="servicio-precio-label">Desde</div>
+              <div class="servicio-precio-valor">
+                $${s.precio.toLocaleString('es-CO')}
+                <span style="font-size: 14px; color: #666;">/${s.unidad}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="servicio-footer">
+            <button onclick="solicitarServicio(${s.id})" class="btn-primary" style="width: 100%;">
+              <i class="fas fa-paper-plane"></i> Solicitar Información
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getCategoriaTexto(categoria) {
+      const map = {
+        'consultoria': 'Consultoría',
+        'implementacion': 'Implementación',
+        'capacitacion': 'Capacitación',
+        'soporte': 'Soporte'
+      };
+      return map[categoria] || categoria;
+    }
+
+    // Filtrar por categoría
+    function filtrarCategoria(categoria) {
+      const badge = document.querySelector(`.categoria-badge.${categoria}`);
+      
+      if (categoriasActivas.has(categoria)) {
+        categoriasActivas.delete(categoria);
+        badge.classList.remove('active');
+      } else {
+        categoriasActivas.add(categoria);
+        badge.classList.add('active');
+      }
+      
+      aplicarFiltros();
+    }
+
+    // Aplicar filtros
+    function aplicarFiltros() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const ordenSelect = document.getElementById('ordenSelect').value;
+
+      // Filtrar
+      serviciosFiltrados = servicios.filter(s => {
+        const matchCategoria = categoriasActivas.has(s.categoria);
+        const matchSearch = s.nombre.toLowerCase().includes(searchTerm) || 
+                           s.descripcion.toLowerCase().includes(searchTerm);
+        return matchCategoria && matchSearch;
+      });
+
+      // Ordenar
+      if (ordenSelect === 'nombre') {
+        serviciosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      } else if (ordenSelect === 'precio-asc') {
+        serviciosFiltrados.sort((a, b) => a.precio - b.precio);
+      } else if (ordenSelect === 'precio-desc') {
+        serviciosFiltrados.sort((a, b) => b.precio - a.precio);
+      }
+
+      renderizarServicios(serviciosFiltrados);
+    }
+
+    // Limpiar filtros
+    function limpiarFiltros() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('ordenSelect').value = 'nombre';
+      
+      categoriasActivas = new Set(['consultoria', 'implementacion', 'capacitacion', 'soporte']);
+      document.querySelectorAll('.categoria-badge').forEach(b => b.classList.add('active'));
+      
+      aplicarFiltros();
+    }
+
+    // Solicitar servicio
+    function solicitarServicio(servicioId) {
+      const servicio = servicios.find(s => s.id === servicioId);
+      alert(`Solicitud de información enviada para: ${servicio.nombre}\n\nNuestro equipo se pondrá en contacto contigo pronto.`);
+    }
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
+    document.getElementById('ordenSelect').addEventListener('change', aplicarFiltros);
+
+    // Inicializar
+    window.onload = async () => {
+      if (await verificarSesion()) {
+        renderizarServicios(servicios);
+      }
+    };
+
+    // Dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+      
+      dropdownButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const dropdown = this.parentElement;
+          const isOpen = dropdown.classList.contains('open');
+          
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+          
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        });
+      });
+      
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown').forEach(dd => {
+          dd.classList.remove('open');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

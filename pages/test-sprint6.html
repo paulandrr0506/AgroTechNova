@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Sprint 6 - AgroTechNova</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-card h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .btn-danger {
+      background: #f44336;
+    }
+    .btn-danger:hover {
+      background: #da190b;
+    }
+    .result {
+      background: #f9f9f9;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Test Sprint 6 - AgroTechNova</h1>
+  <p><strong>Funcionalidades:</strong> RF34 (Tickets), RF36 (Panel Admin), RF37 y RF46 (Logs)</p>
+
+  <!-- Test 1: Login -->
+  <div class="test-card">
+    <h2>1. Login (Generar Log Automático)</h2>
+    <p>Email: admin@agrotechnova.com | Password: Admin123!</p>
+    <button onclick="testLogin()">🔐 Test Login</button>
+    <button onclick="testLogout()">🔒 Test Logout</button>
+    <div id="result1" class="result"></div>
+  </div>
+
+  <!-- Test 2: Crear Ticket -->
+  <div class="test-card">
+    <h2>2. Crear Ticket (RF34)</h2>
+    <input type="text" id="ticketAsunto" placeholder="Asunto del ticket" value="Solicitud de asesoría técnica">
+    <textarea id="ticketDescripcion" placeholder="Descripción" rows="3">Necesito asesoría para mejorar el sistema de riego de mi cultivo de maíz.</textarea>
+    <select id="ticketPrioridad">
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+      <option value="baja">Baja</option>
+    </select>
+    <br>
+    <button onclick="testCrearTicket()">➕ Crear Ticket</button>
+    <button onclick="testListarTickets()">📋 Listar Tickets</button>
+    <button onclick="testEstadisticasTickets()">📊 Estadísticas</button>
+    <div id="result2" class="result"></div>
+  </div>
+
+  <!-- Test 3: Logs del Sistema -->
+  <div class="test-card">
+    <h2>3. Logs del Sistema (RF37, RF46)</h2>
+    <button onclick="testListarLogs()">📋 Listar Logs</button>
+    <button onclick="testLogsRecientes()">🕐 Logs Recientes</button>
+    <button onclick="testEstadisticasLogs()">📊 Estadísticas Logs</button>
+    <div id="result3" class="result"></div>
+  </div>
+
+  <!-- Test 4: Panel Administrativo -->
+  <div class="test-card">
+    <h2>4. Panel Administrativo (RF36)</h2>
+    <button onclick="testMetricas()">📈 Métricas Sistema</button>
+    <button onclick="testActividadReciente()">🕒 Actividad Reciente</button>
+    <button onclick="testInfoSistema()">💻 Info Sistema</button>
+    <button onclick="testEstadisticasDB()">🗄️ Estadísticas DB</button>
+    <div id="result4" class="result"></div>
+  </div>
+
+  <!-- Test 5: Acceso a Páginas -->
+  <div class="test-card">
+    <h2>5. Páginas HTML del Sprint 6</h2>
+    <button onclick="window.open('soporte.html', '_blank')">🎫 Soporte y Tickets</button>
+    <button onclick="window.open('panelAdmin.html', '_blank')">🛡️ Panel Admin</button>
+    <button onclick="window.open('actividad.html', '_blank')">📊 Actividad y Logs</button>
+  </div>
+
+  <script>
+    let sessionCookie = '';
+
+    // ========== TEST 1: LOGIN/LOGOUT ==========
+    async function testLogin() {
+      const result = document.getElementById('result1');
+      result.innerHTML = 'Probando login...';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'admin@agrotechnova.com',
+            password: 'Admin123!'
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Login exitoso</span>\n' + JSON.stringify(data, null, 2);
+          result.innerHTML += '\n\n<strong>✓ Log automático registrado en la tabla logs_sistema</strong>';
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testLogout() {
+      const result = document.getElementById('result1');
+      result.innerHTML = 'Cerrando sesión...';
+
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Logout exitoso</span>\n' + JSON.stringify(data, null, 2);
+          result.innerHTML += '\n\n<strong>✓ Log automático registrado en la tabla logs_sistema</strong>';
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    // ========== TEST 2: TICKETS ==========
+    async function testCrearTicket() {
+      const result = document.getElementById('result2');
+      result.innerHTML = 'Creando ticket...';
+
+      try {
+        const response = await fetch('/api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            asunto: document.getElementById('ticketAsunto').value,
+            descripcion: document.getElementById('ticketDescripcion').value,
+            prioridad: document.getElementById('ticketPrioridad').value
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Ticket creado</span>\n' + JSON.stringify(data, null, 2);
+          result.innerHTML += '\n\n<strong>✓ Ticket guardado en tabla tickets</strong>';
+          result.innerHTML += '\n<strong>✓ Log automático registrado</strong>';
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testListarTickets() {
+      const result = document.getElementById('result2');
+      result.innerHTML = 'Listando tickets...';
+
+      try {
+        const response = await fetch('/api/tickets');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Tickets obtenidos (' + data.data.length + ')</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testEstadisticasTickets() {
+      const result = document.getElementById('result2');
+      result.innerHTML = 'Obteniendo estadísticas...';
+
+      try {
+        const response = await fetch('/api/tickets/estadisticas');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Estadísticas obtenidas</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    // ========== TEST 3: LOGS ==========
+    async function testListarLogs() {
+      const result = document.getElementById('result3');
+      result.innerHTML = 'Listando logs...';
+
+      try {
+        const response = await fetch('/api/logs?limit=10');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Logs obtenidos (' + data.data.length + ')</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testLogsRecientes() {
+      const result = document.getElementById('result3');
+      result.innerHTML = 'Obteniendo logs recientes...';
+
+      try {
+        const response = await fetch('/api/logs/recientes?limit=20');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Logs recientes (' + data.data.length + ')</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testEstadisticasLogs() {
+      const result = document.getElementById('result3');
+      result.innerHTML = 'Obteniendo estadísticas...';
+
+      try {
+        const response = await fetch('/api/logs/estadisticas?periodo=24h');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Estadísticas obtenidas</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    // ========== TEST 4: PANEL ADMIN ==========
+    async function testMetricas() {
+      const result = document.getElementById('result4');
+      result.innerHTML = 'Obteniendo métricas...';
+
+      try {
+        const response = await fetch('/api/admin/metricas');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Métricas obtenidas</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testActividadReciente() {
+      const result = document.getElementById('result4');
+      result.innerHTML = 'Obteniendo actividad...';
+
+      try {
+        const response = await fetch('/api/admin/actividad?limit=10');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Actividad obtenida</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testInfoSistema() {
+      const result = document.getElementById('result4');
+      result.innerHTML = 'Obteniendo info del sistema...';
+
+      try {
+        const response = await fetch('/api/admin/sistema');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Info del sistema obtenida</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+
+    async function testEstadisticasDB() {
+      const result = document.getElementById('result4');
+      result.innerHTML = 'Obteniendo estadísticas de DB...';
+
+      try {
+        const response = await fetch('/api/admin/database');
+        const data = await response.json();
+        
+        if (response.ok) {
+          result.innerHTML = '<span class="success">✅ Estadísticas de DB obtenidas</span>\n' + 
+            JSON.stringify(data.data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">❌ Error</span>\n' + JSON.stringify(data, null, 2);
+        }
+      } catch (error) {
+        result.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+// Prisma Schema para AgroTechNova
+// Base de datos: MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// SPRINT 1: AUTENTICACIÓN
+// ========================================
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(50)
+  descripcion String?  @db.Text
+  permisos    String?  @db.Text
+  createdAt   DateTime @default(now()) @map("fecha_creacion")
+  updatedAt   DateTime @updatedAt @map("fecha_modificacion")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  nombre          String    @db.VarChar(100)
+  email           String    @unique @db.VarChar(100)
+  passwordHash    String    @map("password_hash") @db.Text
+  rolId           Int       @map("rol_id")
+  estado          String    @default("activo") @db.VarChar(20)
+  createdAt       DateTime  @default(now()) @map("fecha_creacion")
+  updatedAt       DateTime  @updatedAt @map("fecha_modificacion")
+  ultimoAcceso    DateTime? @map("ultimo_acceso")
+
+  role            Role              @relation(fields: [rolId], references: [id])
+  projects        Project[]
+  tasks           TaskAssignment[]
+  expenses        Expense[]
+  inventoryMoves  InventoryMovement[]
+
+  @@map("usuarios")
+}
+
+// ========================================
+// SPRINT 2: GESTIÓN DE PROYECTOS
+// ========================================
+
+model ProjectCategory {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(100)
+  descripcion String?  @db.Text
+  createdAt   DateTime @default(now()) @map("fecha_creacion")
+
+  projects Project[]
+
+  @@map("categorias_proyecto")
+}
+
+model Project {
+  id                Int       @id @default(autoincrement())
+  nombre            String    @db.VarChar(200)
+  descripcion       String?   @db.Text
+  categoriaId       Int       @map("categoria_id")
+  responsableId     Int       @map("responsable_id")
+  fechaInicio       DateTime  @map("fecha_inicio") @db.Date
+  fechaFin          DateTime? @map("fecha_fin") @db.Date
+  presupuesto       Decimal   @default(0) @db.Decimal(10, 2)
+  estado            String    @default("planificacion") @db.VarChar(50)
+  prioridad         String    @default("media") @db.VarChar(20)
+  ubicacion         String?   @db.VarChar(200)
+  objetivos         String?   @db.Text
+  alcance           String?   @db.Text
+  riesgos           String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("fecha_creacion")
+  updatedAt         DateTime  @updatedAt @map("fecha_modificacion")
+
+  category          ProjectCategory @relation(fields: [categoriaId], references: [id])
+  responsible       User            @relation(fields: [responsableId], references: [id])
+  phases            Phase[]
+  milestones        Milestone[]
+  resources         Resource[]
+  budgets           Budget[]
+  expenses          Expense[]
+  tasks             Task[]
+  inventoryMoves    InventoryMovement[]
+
+  @@map("proyectos")
+}
+
+model Phase {
+  id          Int       @id @default(autoincrement())
+  proyectoId  Int       @map("proyecto_id")
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  fechaInicio DateTime  @map("fecha_inicio") @db.Date
+  fechaFin    DateTime? @map("fecha_fin") @db.Date
+  estado      String    @default("pendiente") @db.VarChar(50)
+  orden       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("fecha_creacion")
+
+  project     Project      @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+
+  @@map("fases")
+}
+
+model Milestone {
+  id          Int       @id @default(autoincrement())
+  proyectoId  Int       @map("proyecto_id")
+  faseId      Int?      @map("fase_id")
+  nombre      String    @db.VarChar(150)
+  descripcion String?   @db.Text
+  fechaLimite DateTime  @map("fecha_limite") @db.Date
+  estado      String    @default("pendiente") @db.VarChar(50)
+  progreso    Int       @default(0)
+  prioridad   String    @default("media") @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @map("fecha_creacion")
+
+  project Project @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  phase   Phase?  @relation(fields: [faseId], references: [id], onDelete: SetNull)
+
+  @@map("hitos")
+}
+
+// ========================================
+// SPRINT 3: RECURSOS Y PRESUPUESTOS
+// ========================================
+
+model Resource {
+  id              Int      @id @default(autoincrement())
+  proyectoId      Int      @map("proyecto_id")
+  nombre          String   @db.VarChar(100)
+  tipo            String   @db.VarChar(50)
+  cantidad        Int      @default(1)
+  unidad          String?  @db.VarChar(50)
+  costoUnitario   Decimal  @map("costo_unitario") @db.Decimal(10, 2)
+  costoTotal      Decimal  @map("costo_total") @db.Decimal(10, 2)
+  proveedor       String?  @db.VarChar(100)
+  estado          String   @default("disponible") @db.VarChar(50)
+  descripcion     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("fecha_creacion")
+
+  project Project @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+
+  @@map("recursos")
+}
+
+model Budget {
+  id              Int      @id @default(autoincrement())
+  proyectoId      Int      @map("proyecto_id")
+  categoria       String?  @db.VarChar(100)
+  montoAsignado   Decimal  @map("monto_asignado") @db.Decimal(10, 2)
+  montoGastado    Decimal  @default(0) @map("monto_gastado") @db.Decimal(10, 2)
+  montoDisponible Decimal  @map("monto_disponible") @db.Decimal(10, 2)
+  descripcion     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("fecha_creacion")
+  updatedAt       DateTime @updatedAt @map("fecha_modificacion")
+
+  project Project @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+
+  @@map("presupuestos")
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  proyectoId  Int      @map("proyecto_id")
+  categoria   String   @db.VarChar(100)
+  descripcion String?  @db.Text
+  monto       Decimal  @db.Decimal(10, 2)
+  fecha       DateTime @db.Date
+  responsable String?  @db.VarChar(100)
+  estado      String   @default("aprobado") @db.VarChar(50)
+  comprobante String?  @db.VarChar(200)
+  usuarioId   Int?     @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("fecha_creacion")
+
+  project Project @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [usuarioId], references: [id])
+
+  @@map("gastos")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  proyectoId  Int       @map("proyecto_id")
+  nombre      String    @db.VarChar(200)
+  descripcion String?   @db.Text
+  prioridad   String    @default("media") @db.VarChar(20)
+  estado      String    @default("pendiente") @db.VarChar(50)
+  fechaInicio DateTime? @map("fecha_inicio") @db.Date
+  fechaFin    DateTime? @map("fecha_fin") @db.Date
+  progreso    Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("fecha_creacion")
+
+  project     Project          @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  assignments TaskAssignment[]
+
+  @@map("tareas")
+}
+
+model TaskAssignment {
+  id        Int      @id @default(autoincrement())
+  tareaId   Int      @map("tarea_id")
+  usuarioId Int      @map("usuario_id")
+  rol       String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("fecha_asignacion")
+
+  task Task @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [usuarioId], references: [id])
+
+  @@unique([tareaId, usuarioId])
+  @@map("asignaciones_tareas")
+}
+
+// ========================================
+// SPRINT 4: INVENTARIO Y PROVEEDORES
+// ========================================
+
+model Provider {
+  id                Int       @id @default(autoincrement())
+  nombre            String    @db.VarChar(200)
+  nit               String?   @unique @db.VarChar(50)
+  contacto          String?   @db.VarChar(100)
+  telefono          String?   @db.VarChar(50)
+  email             String?   @db.VarChar(100)
+  direccion         String?   @db.Text
+  tipoProducto      String?   @map("tipo_producto") @db.VarChar(100)
+  calificacion      Decimal?  @db.Decimal(3, 2)
+  estado            String    @default("activo") @db.VarChar(20)
+  notas             String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("fecha_creacion")
+  updatedAt         DateTime  @updatedAt @map("fecha_modificacion")
+
+  products Product[]
+
+  @@map("proveedores")
+}
+
+model Product {
+  id              Int       @id @default(autoincrement())
+  nombre          String    @db.VarChar(200)
+  tipo            String    @db.VarChar(50)
+  categoria       String?   @db.VarChar(100)
+  unidad          String    @db.VarChar(50)
+  stockActual     Int       @default(0) @map("stock_actual")
+  stockMinimo     Int       @default(0) @map("stock_minimo")
+  costoUnitario   Decimal   @map("costo_unitario") @db.Decimal(10, 2)
+  proveedorId     Int?      @map("proveedor_id")
+  descripcion     String?   @db.Text
+  esOrganico      Boolean   @default(false) @map("es_organico")
+  estado          String    @default("disponible") @db.VarChar(50)
+  createdAt       DateTime  @default(now()) @map("fecha_creacion")
+  updatedAt       DateTime  @updatedAt @map("fecha_modificacion")
+
+  provider        Provider?           @relation(fields: [proveedorId], references: [id], onDelete: SetNull)
+  inventoryMoves  InventoryMovement[]
+
+  @@map("productos")
+}
+
+model InventoryMovement {
+  id              Int      @id @default(autoincrement())
+  productoId      Int      @map("producto_id")
+  tipo            String   @db.VarChar(20) // 'entrada' o 'salida'
+  cantidad        Int
+  costoUnitario   Decimal  @map("costo_unitario") @db.Decimal(10, 2)
+  costoTotal      Decimal  @map("costo_total") @db.Decimal(10, 2)
+  proyectoId      Int?     @map("proyecto_id")
+  usuarioId       Int      @map("usuario_id")
+  fecha           DateTime @db.Date
+  descripcion     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("fecha_creacion")
+
+  product Product  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [proyectoId], references: [id], onDelete: SetNull)
+  user    User     @relation(fields: [usuarioId], references: [id])
+
+  @@map("movimientos_inventario")
+}

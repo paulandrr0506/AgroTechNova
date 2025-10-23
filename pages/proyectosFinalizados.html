@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyectos Finalizados - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header con navegación unificada -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1>✅ Proyectos Finalizados</h1>
+        <div class="user-info">
+          <span id="userName">Usuario</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="agendaReuniones.html">Agenda</a>
+        
+        <!-- Dropdown: Gestión Financiera -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Gestión Financiera
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="recursos.html">Recursos</a>
+            <a href="presupuestos.html">Presupuestos</a>
+            <a href="gastos.html">Gastos</a>
+          </div>
+        </div>
+        
+        <!-- Dropdown: Inventario y Proveedores -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Inventario y Proveedores
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="proveedores.html">Proveedores</a>
+            <a href="productos.html">Productos</a>
+            <a href="inventario.html">Inventario</a>
+          </div>
+        </div>
+
+        <!-- Dropdown: Reportes y Documentación -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn active">
+            Reportes y Documentación
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="reportes.html">Reportes Financieros</a>
+            <a href="proyectosFinalizados.html" class="active">Proyectos Finalizados</a>
+            <a href="catalogo.html">Catálogo de Servicios</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span>›</span>
+      <span>Proyectos Finalizados</span>
+    </div>
+
+    <!-- Estadísticas -->
+    <section class="stats-section">
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stats-info">
+          <p class="stats-label">Total Finalizados</p>
+          <p class="stats-value" id="totalFinalizados">0</p>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stats-info">
+          <p class="stats-label">Presupuesto Total</p>
+          <p class="stats-value" id="presupuestoTotal">$0</p>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stats-info">
+          <p class="stats-label">Total Ejecutado</p>
+          <p class="stats-value" id="totalEjecutado">$0</p>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);">
+          <i class="fas fa-percentage"></i>
+        </div>
+        <div class="stats-info">
+          <p class="stats-label">Eficiencia Promedio</p>
+          <p class="stats-value" id="eficienciaPromedio">0%</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtros -->
+    <section style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="display: flex; gap: 15px; align-items: end;">
+        <div class="form-group" style="flex: 1; margin: 0;">
+          <label>Buscar Proyecto</label>
+          <input type="text" id="searchInput" placeholder="Nombre del proyecto..." style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px;">
+        </div>
+        <button onclick="limpiarFiltros()" class="btn-secondary">🔄 Limpiar</button>
+      </div>
+    </section>
+
+    <!-- Lista de Proyectos -->
+    <section style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;">📁 Historial de Proyectos Completados</h2>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Fin</th>
+              <th>Presupuesto</th>
+              <th>Gastado</th>
+              <th>Eficiencia</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaProyectos">
+            <tr><td colspan="8" class="text-center">Cargando proyectos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Modal de Detalles -->
+    <div id="modalDetalles" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+          <h2><i class="fas fa-info-circle"></i> Detalles del Proyecto</h2>
+          <span class="close" onclick="cerrarModal()">&times;</span>
+        </div>
+        
+        <div id="detallesContenido" style="padding: 20px;">
+          <!-- Información General -->
+          <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 id="detalleNombre" style="color: #2e7d32; margin-bottom: 15px;">Nombre del Proyecto</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+              <div>
+                <strong>Descripción:</strong>
+                <p id="detalleDescripcion" style="margin: 5px 0;">-</p>
+              </div>
+              <div>
+                <strong>Estado:</strong>
+                <span id="detalleEstado" class="badge badge-finalizado">Finalizado</span>
+              </div>
+              <div>
+                <strong>Fecha Inicio:</strong>
+                <span id="detalleFechaInicio">-</span>
+              </div>
+              <div>
+                <strong>Fecha Fin:</strong>
+                <span id="detalleFechaFin">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen Financiero -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 15px; border-radius: 8px;">
+              <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Presupuesto Total</div>
+              <div id="detallePresupuesto" style="font-size: 22px; font-weight: bold; color: #1976d2;">$0</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); padding: 15px; border-radius: 8px;">
+              <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Total Gastado</div>
+              <div id="detalleGastado" style="font-size: 22px; font-weight: bold; color: #d32f2f;">$0</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 15px; border-radius: 8px;">
+              <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Eficiencia</div>
+              <div id="detalleEficiencia" style="font-size: 22px; font-weight: bold; color: #2e7d32;">0%</div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button onclick="verReporte()" class="btn-primary">📊 Ver Reporte Completo</button>
+            <button onclick="cerrarModal()" class="btn-secondary">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let proyectosData = [];
+    let proyectoActual = null;
+
+    // Verificar sesión
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return false;
+        }
+        const data = await response.json();
+        document.getElementById('userName').textContent = data.user.nombre;
+        return true;
+      } catch (error) {
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    function cerrarSesion() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = '/login.html');
+    }
+
+    // Cargar proyectos finalizados
+    async function cargarProyectos() {
+      try {
+        console.log('🔄 Iniciando carga de proyectos finalizados...');
+        console.log('🌐 URL de la petición:', window.location.origin + '/api/reports/finished-projects');
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+        
+        const response = await fetch('/api/reports/finished-projects', {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        clearTimeout(timeoutId);
+        
+        console.log('📡 Respuesta recibida, status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Datos parseados:', JSON.stringify(data, null, 2));
+        console.log('✅ Success:', data.success);
+        console.log('📋 Projects:', data.projects);
+        console.log('🔢 Length:', data.projects ? data.projects.length : 'undefined');
+
+        if (data.success && data.projects && data.projects.length > 0) {
+          proyectosData = data.projects;
+          console.log('✅ Proyectos cargados exitosamente:', proyectosData.length);
+          console.log('📊 Primer proyecto:', proyectosData[0]);
+          mostrarProyectos(proyectosData);
+          actualizarEstadisticas(proyectosData);
+        } else {
+          console.warn('⚠️ No se encontraron proyectos finalizados o data.success es false');
+          console.log('Data completo:', data);
+          document.getElementById('tablaProyectos').innerHTML = 
+            '<tr><td colspan="8" class="text-center">No se encontraron proyectos finalizados</td></tr>';
+          document.getElementById('totalFinalizados').textContent = '0';
+          document.getElementById('presupuestoTotal').textContent = '$0';
+          document.getElementById('totalEjecutado').textContent = '$0';
+          document.getElementById('eficienciaPromedio').textContent = '0%';
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar proyectos:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Stack:', error.stack);
+        
+        let errorMsg = 'Error al cargar proyectos: ' + error.message;
+        if (error.name === 'AbortError') {
+          errorMsg = 'La petición tardó demasiado (timeout). El servidor puede estar sobrecargado o no responde.';
+        }
+        
+        document.getElementById('tablaProyectos').innerHTML = 
+          '<tr><td colspan="8" class="text-center" style="color: red;">' + errorMsg + '</td></tr>';
+      }
+    }
+
+    // Mostrar proyectos en tabla
+    function mostrarProyectos(proyectos) {
+      const tbody = document.getElementById('tablaProyectos');
+
+      if (proyectos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No hay proyectos finalizados</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = proyectos.map(p => {
+        const presupuestoTotal = parseFloat(p.presupuesto_total || 0);
+        const presupuestoGastado = parseFloat(p.presupuesto_gastado || 0);
+        
+        const eficiencia = presupuestoTotal > 0 
+          ? ((1 - (presupuestoGastado / presupuestoTotal)) * 100).toFixed(1)
+          : 0;
+        const colorEficiencia = eficiencia >= 0 ? '#4caf50' : '#f44336';
+
+        // Formatear fechas
+        const fechaInicio = p.fecha_inicio ? new Date(p.fecha_inicio).toLocaleDateString('es-CO') : 'N/A';
+        const fechaFin = p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString('es-CO') : 'N/A';
+
+        return `
+          <tr>
+            <td>${p.id}</td>
+            <td><strong>${p.nombre}</strong></td>
+            <td>${fechaInicio}</td>
+            <td>${fechaFin}</td>
+            <td>$${presupuestoTotal.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td>$${presupuestoGastado.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td><span style="color: ${colorEficiencia}; font-weight: bold;">${eficiencia}%</span></td>
+            <td>
+              <button onclick="verDetalles(${p.id})" class="btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                <i class="fas fa-eye"></i> Ver
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Actualizar estadísticas
+    function actualizarEstadisticas(proyectos) {
+      const total = proyectos.length;
+      const presupuestoTotal = proyectos.reduce((sum, p) => sum + parseFloat(p.presupuesto_total || 0), 0);
+      const ejecutado = proyectos.reduce((sum, p) => sum + parseFloat(p.presupuesto_gastado || 0), 0);
+      
+      const eficiencias = proyectos.map(p => {
+        const presupTotal = parseFloat(p.presupuesto_total || 0);
+        const presupGastado = parseFloat(p.presupuesto_gastado || 0);
+        return presupTotal > 0 
+          ? ((1 - (presupGastado / presupTotal)) * 100)
+          : 0;
+      });
+      const eficienciaPromedio = eficiencias.length > 0 
+        ? (eficiencias.reduce((sum, e) => sum + e, 0) / eficiencias.length).toFixed(1)
+        : 0;
+
+      document.getElementById('totalFinalizados').textContent = total;
+      document.getElementById('presupuestoTotal').textContent = `$${presupuestoTotal.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('totalEjecutado').textContent = `$${ejecutado.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('eficienciaPromedio').textContent = `${eficienciaPromedio}%`;
+    }
+
+    // Buscar proyectos
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const filtrados = proyectosData.filter(p => 
+        p.nombre.toLowerCase().includes(searchTerm)
+      );
+      mostrarProyectos(filtrados);
+    });
+
+    // Limpiar filtros
+    function limpiarFiltros() {
+      document.getElementById('searchInput').value = '';
+      mostrarProyectos(proyectosData);
+    }
+
+    // Ver detalles
+    function verDetalles(proyectoId) {
+      const proyecto = proyectosData.find(p => p.id === proyectoId);
+      if (!proyecto) {
+        console.error('Proyecto no encontrado:', proyectoId);
+        return;
+      }
+
+      proyectoActual = proyecto;
+
+      const presupuestoTotal = parseFloat(proyecto.presupuesto_total || 0);
+      const presupuestoGastado = parseFloat(proyecto.presupuesto_gastado || 0);
+
+      // Formatear fechas
+      const fechaInicio = proyecto.fecha_inicio ? new Date(proyecto.fecha_inicio).toLocaleDateString('es-CO') : 'N/A';
+      const fechaFin = proyecto.fecha_fin ? new Date(proyecto.fecha_fin).toLocaleDateString('es-CO') : 'N/A';
+
+      // Llenar modal
+      document.getElementById('detalleNombre').textContent = proyecto.nombre;
+      document.getElementById('detalleDescripcion').textContent = proyecto.descripcion || 'Sin descripción';
+      document.getElementById('detalleEstado').textContent = proyecto.estado;
+      document.getElementById('detalleFechaInicio').textContent = fechaInicio;
+      document.getElementById('detalleFechaFin').textContent = fechaFin;
+      document.getElementById('detallePresupuesto').textContent = 
+        `$${presupuestoTotal.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('detalleGastado').textContent = 
+        `$${presupuestoGastado.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      const eficiencia = presupuestoTotal > 0 
+        ? ((1 - (presupuestoGastado / presupuestoTotal)) * 100).toFixed(1)
+        : 0;
+      document.getElementById('detalleEficiencia').textContent = `${eficiencia}%`;
+
+      // Mostrar modal
+      const modal = document.getElementById('modalDetalles');
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+    }
+
+    // Cerrar modal
+    function cerrarModal() {
+      const modal = document.getElementById('modalDetalles');
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+      proyectoActual = null;
+    }
+
+    // Ver reporte completo
+    function verReporte() {
+      if (proyectoActual) {
+        window.location.href = `reportes.html?proyecto=${proyectoActual.id}`;
+      }
+    }
+
+    // Inicializar
+    window.onload = async () => {
+      if (await verificarSesion()) {
+        await cargarProyectos();
+      }
+    };
+
+    // Cerrar modal al hacer clic fuera
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('modalDetalles');
+      if (event.target === modal) {
+        cerrarModal();
+      }
+    });
+
+    // Funcionalidad de dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+      
+      dropdownButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const dropdown = this.parentElement;
+          const isOpen = dropdown.classList.contains('open');
+          
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+          
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        });
+      });
+      
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown').forEach(dd => {
+          dd.classList.remove('open');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

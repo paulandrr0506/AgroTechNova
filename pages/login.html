@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión - AgroTechNova</title>
+  <link rel="stylesheet" href="../public/css/login.css">
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <a href="Pagina.html"><img src="../images/logo.png" alt="Logo"></a>
+      <span>AgroTechNova</span>
+    </div>
+    <h2>Iniciar Sesión</h2>
+    
+    <!-- Mensaje de error/éxito -->
+    <div id="mensaje" style="display: none; padding: 10px; margin: 10px 0; border-radius: 4px; text-align: center;"></div>
+    
+    <form id="loginForm">
+      <input type="email" id="correo" placeholder="Correo electrónico" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <button type="submit" id="btnLogin">Ingresar</button>
+    </form>
+    <a class="link" href="register.html">¿No tienes cuenta? Regístrate aquí</a>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const btnLogin = document.getElementById('btnLogin');
+    const mensajeDiv = document.getElementById('mensaje');
+
+    // Verificar si ya hay sesión activa
+    verificarSesion();
+
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include' // Incluir cookies
+        });
+
+        const data = await response.json();
+
+        if (data.authenticated) {
+          // Ya hay sesión activa, redirigir
+          window.location.href = 'dashboard.html';
+        }
+      } catch (error) {
+        // No hay sesión, continuar en login
+        console.log('No hay sesión activa');
+      }
+    }
+
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const correo = document.getElementById('correo').value;
+      const password = document.getElementById('password').value;
+
+      // Deshabilitar botón mientras se procesa
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Ingresando...';
+      ocultarMensaje();
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include', // Importante para cookies
+          body: JSON.stringify({ email: correo, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Login exitoso
+          mostrarMensaje('Bienvenido ' + data.user.nombre, 'exito');
+          
+          // Guardar datos del usuario en localStorage
+          localStorage.setItem('nombreUsuario', data.user.nombre);
+          localStorage.setItem('emailUsuario', data.user.email);
+          localStorage.setItem('rolUsuario', data.user.rol);
+
+          // Redirigir al dashboard principal para todos los usuarios
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 500);
+
+        } else {
+          // Error en login
+          mostrarMensaje(data.error || 'Credenciales inválidas', 'error');
+          btnLogin.disabled = false;
+          btnLogin.textContent = 'Ingresar';
+        }
+
+      } catch (error) {
+        console.error('Error en login:', error);
+        mostrarMensaje('Error al conectar con el servidor', 'error');
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Ingresar';
+      }
+    });
+
+    function mostrarMensaje(texto, tipo) {
+      mensajeDiv.textContent = texto;
+      mensajeDiv.style.display = 'block';
+      
+      if (tipo === 'exito') {
+        mensajeDiv.style.backgroundColor = '#d4edda';
+        mensajeDiv.style.color = '#155724';
+        mensajeDiv.style.border = '1px solid #c3e6cb';
+      } else {
+        mensajeDiv.style.backgroundColor = '#f8d7da';
+        mensajeDiv.style.color = '#721c24';
+        mensajeDiv.style.border = '1px solid #f5c6cb';
+      }
+    }
+
+    function ocultarMensaje() {
+      mensajeDiv.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

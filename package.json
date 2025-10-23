@@ -1,0 +1,30 @@
+{
+  "name": "agrotechnova",
+  "version": "1.0.0",
+  "description": "Plataforma web agroindustrial para gestión de proyectos, recursos, presupuestos e inventario - Proyecto Integrador 1",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "agroindustrial",
+    "gestión",
+    "proyectos",
+    "inventario",
+    "recursos"
+  ],
+  "author": "AgroTechNova Team",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "exceljs": "^4.4.0",
+    "mysql2": "^3.15.3",
+    "pdfkit": "^0.17.2",
+    "prisma": "^6.18.0",
+    "sqlite3": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

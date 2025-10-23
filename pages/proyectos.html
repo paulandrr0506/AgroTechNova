@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Proyectos - AgroTechnova</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../public/css/base.css">
+    <link rel="stylesheet" href="../public/css/proyectos.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header con navegación unificada -->
+        <header>
+            <div class="header-content">
+                <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+                <h1>📦 Gestión de Proyectos</h1>
+                <div class="user-info">
+                    <span id="userName">Administrador</span>
+                    <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
+                </div>
+            </div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="proyectos.html" class="active">Proyectos</a>
+                <a href="usuarios.html">Usuarios</a>
+                <a href="agendaReuniones.html">Agenda</a>
+                
+                <!-- Dropdown: Gestión Financiera -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Gestión Financiera
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="recursos.html">Recursos</a>
+                    <a href="presupuestos.html">Presupuestos</a>
+                    <a href="gastos.html">Gastos</a>
+                  </div>
+                </div>
+                
+                <!-- Dropdown: Inventario y Proveedores -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Inventario y Proveedores
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="proveedores.html">Proveedores</a>
+                    <a href="productos.html">Productos</a>
+                    <a href="inventario.html">Inventario</a>
+                  </div>
+                </div>
+
+                <!-- Dropdown: Reportes y Documentación -->
+                <div class="nav-dropdown">
+                  <button class="nav-dropdown-btn">
+                    Reportes y Documentación
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  <div class="nav-dropdown-content">
+                    <a href="reportes.html">Reportes Financieros</a>
+                    <a href="proyectosFinalizados.html">Proyectos Finalizados</a>
+                    <a href="catalogo.html">Catálogo de Servicios</a>
+                  </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Búsqueda y Filtros (RF62) -->
+        <section class="search-section">
+            <h2>🔍 Buscar Proyectos</h2>
+            <div class="search-filters">
+                <input type="text" id="searchNombre" placeholder="Buscar por nombre..." class="search-input">
+                
+                <select id="searchEstado" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="planificacion">Planificación</option>
+                    <option value="ejecucion">Ejecución</option>
+                    <option value="finalizado">Finalizado</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="suspendido">Suspendido</option>
+                </select>
+
+                <select id="searchCategoria" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <!-- Se llena dinámicamente -->
+                </select>
+
+                <input type="date" id="searchFechaInicio" class="filter-input" placeholder="Fecha inicio">
+                <input type="date" id="searchFechaFin" class="filter-input" placeholder="Fecha fin">
+
+                <button onclick="searchProjects()" class="btn-search">Buscar</button>
+                <button onclick="clearFilters()" class="btn-secondary">Limpiar</button>
+            </div>
+        </section>
+
+        <!-- Botón Crear Proyecto -->
+        <section class="actions-section">
+            <button onclick="openCreateModal()" class="btn-primary">➕ Crear Proyecto</button>
+        </section>
+
+        <!-- Tabla de Proyectos -->
+        <section class="projects-section">
+            <h2>📋 Proyectos</h2>
+            <div id="loadingProjects" class="loading">Cargando proyectos...</div>
+            <div id="projectsTable" style="display: none;">
+                <table class="projects-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Responsable</th>
+                            <th>Estado</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noProjects" style="display: none;" class="no-data">
+                No hay proyectos registrados.
+            </div>
+        </section>
+
+        <!-- Modal Crear/Editar Proyecto -->
+        <div id="projectModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Crear Proyecto</h2>
+                <form id="projectForm" onsubmit="saveProject(event)">
+                    <input type="hidden" id="projectId">
+                    
+                    <label for="nombre">Nombre del Proyecto *</label>
+                    <input type="text" id="nombre" required minlength="3" placeholder="Ej: Cultivo de Café Orgánico">
+
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" rows="3" placeholder="Descripción detallada del proyecto"></textarea>
+
+                    <label for="categoria">Categoría *</label>
+                    <select id="categoria" required>
+                        <option value="">Seleccione una categoría</option>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+
+                    <label for="fechaInicio">Fecha de Inicio *</label>
+                    <input type="date" id="fechaInicio" required>
+
+                    <label for="fechaFin">Fecha de Finalización *</label>
+                    <input type="date" id="fechaFin" required>
+
+                    <label for="estado">Estado</label>
+                    <select id="estado">
+                        <option value="planificacion">Planificación</option>
+                        <option value="ejecucion">Ejecución</option>
+                        <option value="finalizado">Finalizado</option>
+                        <option value="cancelado">Cancelado</option>
+                        <option value="suspendido">Suspendido</option>
+                    </select>
+
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary">Guardar</button>
+                        <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let allProjects = [];
+        let categories = [];
+
+        // Verificar sesión al cargar
+        window.onload = async () => {
+            await checkSession();
+            await loadCategories();
+            await loadProjects();
+        };
+
+        // Verificar sesión
+        async function checkSession() {
+            try {
+                const response = await fetch('/api/auth/session', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const data = await response.json();
+                currentUser = data.user;
+                document.getElementById('userName').textContent = currentUser.nombre;
+            } catch (error) {
+                console.error('Error al verificar sesión:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Cargar categorías (RF23)
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/projects/categories', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error al cargar categorías');
+
+                const data = await response.json();
+                categories = data.categories;
+
+                // Llenar selects
+                const selects = ['categoria', 'searchCategoria'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.nombre;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+                alert('Error al cargar categorías');
+            }
+        }
+
+        // Cargar proyectos
+        async function loadProjects() {
+            try {
+                document.getElementById('loadingProjects').style.display = 'block';
+                document.getElementById('projectsTable').style.display = 'none';
+                document.getElementById('noProjects').style.display = 'none';
+
+                const response = await fetch('/api/projects', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error al cargar proyectos');
+
+                const data = await response.json();
+                allProjects = data.projects;
+
+                displayProjects(allProjects);
+            } catch (error) {
+                console.error('Error al cargar proyectos:', error);
+                document.getElementById('loadingProjects').textContent = 'Error al cargar proyectos';
+            }
+        }
+
+        // Mostrar proyectos en tabla
+        function displayProjects(projects) {
+            document.getElementById('loadingProjects').style.display = 'none';
+
+            if (projects.length === 0) {
+                document.getElementById('noProjects').style.display = 'block';
+                document.getElementById('projectsTable').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('projectsTable').style.display = 'block';
+            const tbody = document.getElementById('projectsTableBody');
+            tbody.innerHTML = '';
+
+            projects.forEach(project => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${project.id}</td>
+                    <td><strong>${project.nombre}</strong></td>
+                    <td>${project.categoria}</td>
+                    <td>${project.responsable}</td>
+                    <td><span class="badge badge-${project.estado}">${project.estado}</span></td>
+                    <td>${formatDate(project.fecha_inicio)}</td>
+                    <td>${formatDate(project.fecha_fin)}</td>
+                    <td class="actions">
+                        <button onclick="viewPhases(${project.id})" class="btn-action" title="Ver Fases">📅</button>
+                        <button onclick="window.location.href='recursos.html?proyecto_id=${project.id}'" class="btn-action" title="Recursos" style="background-color: #17a2b8;">🔧</button>
+                        <button onclick="window.location.href='presupuestos.html?proyecto_id=${project.id}'" class="btn-action" title="Presupuesto" style="background-color: #28a745;">💰</button>
+                        <button onclick="window.location.href='gastos.html?proyecto_id=${project.id}'" class="btn-action" title="Gastos" style="background-color: #dc3545;">📊</button>
+                        <button onclick="editProject(${project.id})" class="btn-action" title="Editar" 
+                            ${!canEdit(project.estado) ? 'disabled' : ''}>✏️</button>
+                        <button onclick="deleteProject(${project.id})" class="btn-action btn-danger" title="Eliminar"
+                            ${project.estado !== 'planificacion' ? 'disabled' : ''}>🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Buscar proyectos (RF62)
+        async function searchProjects() {
+            const nombre = document.getElementById('searchNombre').value;
+            const estado = document.getElementById('searchEstado').value;
+            const categoria_id = document.getElementById('searchCategoria').value;
+            const fecha_inicio = document.getElementById('searchFechaInicio').value;
+            const fecha_fin = document.getElementById('searchFechaFin').value;
+
+            const params = new URLSearchParams();
+            if (nombre) params.append('nombre', nombre);
+            if (estado) params.append('estado', estado);
+            if (categoria_id) params.append('categoria_id', categoria_id);
+            if (fecha_inicio) params.append('fecha_inicio', fecha_inicio);
+            if (fecha_fin) params.append('fecha_fin', fecha_fin);
+
+            try {
+                const response = await fetch(`/api/projects/search?${params}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Error en búsqueda');
+
+                const data = await response.json();
+                displayProjects(data.projects);
+            } catch (error) {
+                console.error('Error al buscar:', error);
+                alert('Error al realizar búsqueda');
+            }
+        }
+
+        // Limpiar filtros
+        function clearFilters() {
+            document.getElementById('searchNombre').value = '';
+            document.getElementById('searchEstado').value = '';
+            document.getElementById('searchCategoria').value = '';
+            document.getElementById('searchFechaInicio').value = '';
+            document.getElementById('searchFechaFin').value = '';
+            loadProjects();
+        }
+
+        // Abrir modal crear
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Crear Proyecto';
+            document.getElementById('projectForm').reset();
+            document.getElementById('projectId').value = '';
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        // Guardar proyecto (RF41)
+        async function saveProject(event) {
+            event.preventDefault();
+
+            const projectId = document.getElementById('projectId').value;
+            const isEdit = projectId !== '';
+
+            const projectData = {
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                categoria_id: parseInt(document.getElementById('categoria').value),
+                fecha_inicio: document.getElementById('fechaInicio').value,
+                fecha_fin: document.getElementById('fechaFin').value,
+                estado: document.getElementById('estado').value
+            };
+
+            try {
+                const url = isEdit ? `/api/projects/${projectId}` : '/api/projects';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(projectData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al guardar proyecto');
+                    return;
+                }
+
+                alert(data.message);
+                closeModal();
+                loadProjects();
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar proyecto');
+            }
+        }
+
+        // Editar proyecto (RF15)
+        async function editProject(id) {
+            const project = allProjects.find(p => p.id === id);
+            if (!project) return;
+
+            if (!canEdit(project.estado)) {
+                alert('Solo se pueden editar proyectos en planificación o ejecución (RF15)');
+                return;
+            }
+
+            document.getElementById('modalTitle').textContent = 'Editar Proyecto';
+            document.getElementById('projectId').value = project.id;
+            document.getElementById('nombre').value = project.nombre;
+            document.getElementById('descripcion').value = project.descripcion || '';
+            document.getElementById('categoria').value = project.categoria_id;
+            document.getElementById('fechaInicio').value = project.fecha_inicio;
+            document.getElementById('fechaFin').value = project.fecha_fin;
+            document.getElementById('estado').value = project.estado;
+            
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        // Eliminar proyecto
+        async function deleteProject(id) {
+            const project = allProjects.find(p => p.id === id);
+            if (project.estado !== 'planificacion') {
+                alert('Solo se pueden eliminar proyectos en planificación');
+                return;
+            }
+
+            if (!confirm('¿Está seguro de eliminar este proyecto? Se eliminarán todas sus fases e hitos.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/projects/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || 'Error al eliminar proyecto');
+                    return;
+                }
+
+                alert(data.message);
+                loadProjects();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar proyecto');
+            }
+        }
+
+        // Ver fases del proyecto
+        function viewPhases(projectId) {
+            window.location.href = `fases.html?projectId=${projectId}`;
+        }
+
+        // Validar si puede editar (RF15)
+        function canEdit(estado) {
+            return estado === 'planificacion' || estado === 'ejecucion';
+        }
+
+        // Formatear fecha
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES');
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('projectModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Funcionalidad de dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+          const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+          
+          dropdownButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              const dropdown = this.parentElement;
+              const isOpen = dropdown.classList.contains('open');
+              
+              // Cerrar todos los dropdowns
+              document.querySelectorAll('.nav-dropdown').forEach(dd => {
+                dd.classList.remove('open');
+              });
+              
+              // Abrir/cerrar el dropdown actual
+              if (!isOpen) {
+                dropdown.classList.add('open');
+              }
+            });
+          });
+          
+          // Cerrar dropdowns al hacer clic fuera
+          document.addEventListener('click', function() {
+            document.querySelectorAll('.nav-dropdown').forEach(dd => {
+              dd.classList.remove('open');
+            });
+          });
+        });
+    </script>
+</body>
+</html>

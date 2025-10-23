@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recursos - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .card .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #2e7d32;
+      margin: 0;
+    }
+
+    .table-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 30px;
+    }
+
+    .table-container h2 {
+      color: #2e7d32;
+      font-size: 24px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e8f5e9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+      color: white;
+    }
+
+    thead th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e0e0e0;
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    tbody td {
+      padding: 15px;
+      color: #333;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .badge-disponible {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .badge-en_uso {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .badge-agotado {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-right: 5px;
+    }
+
+    .btn-edit {
+      background: #2196f3;
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background: #1976d2;
+      transform: translateY(-2px);
+    }
+
+    .btn-delete {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+    }
+
+    .form-container {
+      background: white;
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .form-container h2 {
+      color: #2e7d32;
+      font-size: 24px;
+      margin-bottom: 30px;
+      text-align: center;
+      border-bottom: 2px solid #e8f5e9;
+      padding-bottom: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .action-bar {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .action-bar h2 {
+      color: #2e7d32;
+      margin: 0;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header con navegación unificada -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1>🔧 Gestión de Recursos</h1>
+        <div class="user-info">
+          <span>Administrador</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="agendaReuniones.html">Agenda</a>
+        
+        <!-- Dropdown: Gestión Financiera -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn active">
+            Gestión Financiera
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="recursos.html" class="active">Recursos</a>
+            <a href="presupuestos.html">Presupuestos</a>
+            <a href="gastos.html">Gastos</a>
+          </div>
+        </div>
+        
+        <!-- Dropdown: Inventario y Proveedores -->
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-btn">
+            Inventario y Proveedores
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="proveedores.html">Proveedores</a>
+            <a href="productos.html">Productos</a>
+            <a href="inventario.html">Inventario</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span>›</span>
+      <a href="proyectos.html">Proyectos</a>
+      <span>›</span>
+      <span id="breadcrumbProject">Proyecto</span>
+      <span>›</span>
+      <span>Recursos</span>
+    </div>
+
+    <!-- Botón de acción -->
+    <div class="action-bar">
+      <h2><i class="fas fa-tools"></i> Gestión de Recursos</h2>
+      <button class="btn-primary" id="btnNuevoRecurso">
+        <i class="fas fa-plus-circle"></i> Nuevo Recurso
+      </button>
+    </div>
+
+    <!-- Estadísticas -->
+
+    <!-- Estadísticas -->
+    <div class="stats-cards">
+      <div class="card">
+        <h3><i class="fas fa-boxes"></i> Total Recursos</h3>
+        <p class="stat-value" id="totalRecursos">0</p>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-dollar-sign"></i> Costo Total</h3>
+        <p class="stat-value" id="costoTotal">$0.00</p>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-check-circle"></i> Disponibles</h3>
+        <p class="stat-value" id="totalDisponibles">0</p>
+      </div>
+      <div class="card">
+        <h3><i class="fas fa-play-circle"></i> En Uso</h3>
+        <p class="stat-value" id="totalEnUso">0</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div id="formContainer" class="form-container hidden">
+      <h2 id="formTitle"><i class="fas fa-edit"></i> Nuevo Recurso</h2>
+      <form id="formRecurso">
+        <div class="form-group">
+          <label><i class="fas fa-tag"></i> Nombre del recurso*</label>
+          <input type="text" id="nombre" required placeholder="Ej: Fertilizante orgánico">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-cube"></i> Tipo*</label>
+            <select id="tipo" required>
+              <option value="">Seleccione...</option>
+              <option value="material">Material</option>
+              <option value="equipo">Equipo</option>
+              <option value="insumo">Insumo</option>
+              <option value="mano_obra">Mano de obra</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-flag"></i> Estado*</label>
+            <select id="estado" required>
+              <option value="disponible">Disponible</option>
+              <option value="en_uso">En uso</option>
+              <option value="agotado">Agotado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-sort-numeric-up"></i> Cantidad*</label>
+            <input type="number" id="cantidad" min="0" step="0.01" required placeholder="0">
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-balance-scale"></i> Unidad*</label>
+            <input type="text" id="unidad" placeholder="kg, litros, unidades..." required>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-money-bill-wave"></i> Costo Unitario*</label>
+            <input type="number" id="costo_unitario" min="0" step="0.01" required placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fas fa-tasks"></i> Fase (opcional)</label>
+          <select id="fase_id">
+            <option value="">Sin fase asignada</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fas fa-align-left"></i> Descripción</label>
+          <textarea id="descripcion" rows="3" placeholder="Descripción detallada del recurso..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fas fa-calendar-alt"></i> Fecha de asignación</label>
+          <input type="date" id="fecha_asignacion">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="btnCancelar">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tabla de recursos -->
+    <div class="table-container">
+      <h2><i class="fas fa-list"></i> Recursos del Proyecto</h2>
+      <table id="tablaRecursos">
+        <thead>
+          <tr>
+            <th><i class="fas fa-tag"></i> Nombre</th>
+            <th><i class="fas fa-cube"></i> Tipo</th>
+            <th><i class="fas fa-sort-numeric-up"></i> Cantidad</th>
+            <th><i class="fas fa-money-bill"></i> Costo Unitario</th>
+            <th><i class="fas fa-calculator"></i> Costo Total</th>
+            <th><i class="fas fa-flag"></i> Estado</th>
+            <th><i class="fas fa-cog"></i> Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr>
+            <td colspan="7" class="text-center">Cargando recursos...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const proyectoId = urlParams.get('proyecto_id');
+    let recursoEditando = null;
+
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session');
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return false;
+        }
+        return true;
+      } catch (error) {
+        window.location.href = '/login.html';
+        return false;
+      }
+    }
+
+    async function cargarFases() {
+      try {
+        const response = await fetch(`/api/projects/${proyectoId}/phases`);
+        const data = await response.json();
+        
+        const select = document.getElementById('fase_id');
+        select.innerHTML = '<option value="">Sin fase asignada</option>';
+        
+        if (data.fases) {
+          data.fases.forEach(fase => {
+            const option = document.createElement('option');
+            option.value = fase.id;
+            option.textContent = fase.nombre;
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error al cargar fases:', error);
+      }
+    }
+
+    async function cargarRecursos() {
+      try {
+        const response = await fetch(`/api/resources/project/${proyectoId}`);
+        const data = await response.json();
+        
+        const tbody = document.getElementById('tbody');
+        
+        if (!data.recursos || data.recursos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay recursos registrados</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.recursos.map(recurso => `
+          <tr>
+            <td><strong>${recurso.nombre}</strong></td>
+            <td><span style="text-transform: capitalize;">${recurso.tipo.replace('_', ' ')}</span></td>
+            <td>${recurso.cantidad} ${recurso.unidad}</td>
+            <td>$${parseFloat(recurso.costo_unitario).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td><strong>$${(recurso.cantidad * recurso.costo_unitario).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+            <td><span class="badge badge-${recurso.estado}">${recurso.estado.replace('_', ' ')}</span></td>
+            <td>
+              <button class="btn-small btn-edit" onclick="editarRecurso(${recurso.id})">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <button class="btn-small btn-delete" onclick="eliminarRecurso(${recurso.id})">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error al cargar recursos:', error);
+        alert('Error al cargar recursos');
+      }
+    }
+
+    async function cargarEstadisticas() {
+      try {
+        const response = await fetch(`/api/resources/stats/${proyectoId}`);
+        const data = await response.json();
+        
+        document.getElementById('totalRecursos').textContent = data.total_recursos || 0;
+        document.getElementById('costoTotal').textContent = `$${parseFloat(data.costo_total || 0).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        const disponibles = data.por_estado?.find(e => e.estado === 'disponible')?.total || 0;
+        const enUso = data.por_estado?.find(e => e.estado === 'en_uso')?.total || 0;
+        
+        document.getElementById('totalDisponibles').textContent = disponibles;
+        document.getElementById('totalEnUso').textContent = enUso;
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    }
+
+    document.getElementById('btnNuevoRecurso').addEventListener('click', () => {
+      recursoEditando = null;
+      document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Nuevo Recurso';
+      document.getElementById('formRecurso').reset();
+      document.getElementById('estado').value = 'disponible';
+      document.getElementById('formContainer').classList.remove('hidden');
+      window.scrollTo({ top: document.getElementById('formContainer').offsetTop - 100, behavior: 'smooth' });
+    });
+
+    document.getElementById('btnCancelar').addEventListener('click', () => {
+      document.getElementById('formContainer').classList.add('hidden');
+      recursoEditando = null;
+    });
+
+    document.getElementById('formRecurso').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const recurso = {
+        proyecto_id: parseInt(proyectoId),
+        nombre: document.getElementById('nombre').value,
+        tipo: document.getElementById('tipo').value,
+        cantidad: parseFloat(document.getElementById('cantidad').value),
+        unidad: document.getElementById('unidad').value,
+        costo_unitario: parseFloat(document.getElementById('costo_unitario').value),
+        estado: document.getElementById('estado').value,
+        descripcion: document.getElementById('descripcion').value,
+        fecha_asignacion: document.getElementById('fecha_asignacion').value || new Date().toISOString().split('T')[0]
+      };
+
+      const faseId = document.getElementById('fase_id').value;
+      if (faseId) {
+        recurso.fase_id = parseInt(faseId);
+      }
+
+      try {
+        const url = recursoEditando ? `/api/resources/${recursoEditando}` : '/api/resources';
+        const method = recursoEditando ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(recurso)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message || 'Recurso guardado exitosamente');
+          document.getElementById('formContainer').classList.add('hidden');
+          document.getElementById('formRecurso').reset();
+          await cargarRecursos();
+          await cargarEstadisticas();
+        } else {
+          alert(data.error || 'Error al guardar recurso');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al guardar recurso');
+      }
+    });
+
+    async function editarRecurso(id) {
+      try {
+        const response = await fetch(`/api/resources/${id}`);
+        const data = await response.json();
+
+        if (data.recurso) {
+          recursoEditando = id;
+          document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Recurso';
+          document.getElementById('nombre').value = data.recurso.nombre;
+          document.getElementById('tipo').value = data.recurso.tipo;
+          document.getElementById('cantidad').value = data.recurso.cantidad;
+          document.getElementById('unidad').value = data.recurso.unidad;
+          document.getElementById('costo_unitario').value = data.recurso.costo_unitario;
+          document.getElementById('estado').value = data.recurso.estado;
+          document.getElementById('descripcion').value = data.recurso.descripcion || '';
+          document.getElementById('fecha_asignacion').value = data.recurso.fecha_asignacion || '';
+          document.getElementById('fase_id').value = data.recurso.fase_id || '';
+          document.getElementById('formContainer').classList.remove('hidden');
+          window.scrollTo({ top: document.getElementById('formContainer').offsetTop - 100, behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cargar recurso');
+      }
+    }
+
+    async function eliminarRecurso(id) {
+      if (!confirm('¿Está seguro de eliminar este recurso?')) return;
+
+      try {
+        const response = await fetch(`/api/resources/${id}`, { method: 'DELETE' });
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message || 'Recurso eliminado');
+          await cargarRecursos();
+          await cargarEstadisticas();
+        } else {
+          alert(data.error || 'Error al eliminar recurso');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar recurso');
+      }
+    }
+
+    function cerrarSesion() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = '/login.html')
+        .catch(() => window.location.href = '/login.html');
+    }
+
+    async function init() {
+      if (!proyectoId) {
+        alert('No se especificó el proyecto');
+        window.location.href = '/dashboard.html';
+        return;
+      }
+
+      if (await verificarSesion()) {
+        // Validar que el proyecto existe
+        try {
+          const projectResponse = await fetch(`/api/projects/${proyectoId}`);
+          if (!projectResponse.ok) {
+            alert('Proyecto no encontrado');
+            window.location.href = '/dashboard.html';
+            return;
+          }
+          const projectData = await projectResponse.json();
+          document.getElementById('breadcrumbProject').textContent = projectData.project.nombre;
+        } catch (error) {
+          console.error('Error al validar proyecto:', error);
+          alert('Error al cargar el proyecto');
+          window.location.href = '/dashboard.html';
+          return;
+        }
+
+        await cargarFases();
+        await cargarRecursos();
+        await cargarEstadisticas();
+      }
+    }
+
+    init();
+
+    // Funcionalidad de dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownButtons = document.querySelectorAll('.nav-dropdown-btn');
+      
+      dropdownButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const dropdown = this.parentElement;
+          const isOpen = dropdown.classList.contains('open');
+          
+          // Cerrar todos los dropdowns
+          document.querySelectorAll('.nav-dropdown').forEach(dd => {
+            dd.classList.remove('open');
+          });
+          
+          // Abrir/cerrar el dropdown actual
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        });
+      });
+      
+      // Cerrar dropdowns al hacer clic fuera
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.nav-dropdown').forEach(dd => {
+          dd.classList.remove('open');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

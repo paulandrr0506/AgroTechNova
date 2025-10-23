@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soporte y Tickets - AgroTechNova</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+  <style>
+    .ticket-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-left: 4px solid #4CAF50;
+    }
+
+    .ticket-card.prioridad-alta {
+      border-left-color: #f44336;
+    }
+
+    .ticket-card.prioridad-media {
+      border-left-color: #ff9800;
+    }
+
+    .ticket-card.prioridad-baja {
+      border-left-color: #2196F3;
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .ticket-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .badge-estado {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .badge-estado.resuelto,
+    .badge-estado.cerrado {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .badge-prioridad {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    .badge-prioridad.alta {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .badge-prioridad.baja {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .ticket-actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 2rem;
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .filters {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    .stat-card p {
+      margin: 0.5rem 0 0 0;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header con navegación -->
+    <header>
+      <div class="header-content">
+        <img src="../images/logo.png" alt="Logo AgroTechnova" class="logo">
+        <h1><i class="fas fa-headset"></i> Soporte y Tickets</h1>
+        <div class="user-info">
+          <span id="usuarioNombre">Cargando...</span>
+          <button onclick="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+        </div>
+      </div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="usuarios.html">Usuarios</a>
+        <a href="soporte.html" class="active">Soporte</a>
+        <a href="panelAdmin.html" id="menuAdmin" style="display: none;">Panel Admin</a>
+        <a href="actividad.html" id="menuActividad" style="display: none;">Actividad</a>
+      </nav>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main>
+      <div class="actions-bar">
+        <button onclick="mostrarModalNuevoTicket()" class="btn-primary">
+          <i class="fas fa-plus"></i> Nuevo Ticket
+        </button>
+        <button onclick="cargarTickets()" class="btn-secondary">
+          <i class="fas fa-sync"></i> Actualizar
+        </button>
+      </div>
+
+      <!-- Estadísticas (solo admin) -->
+      <div id="estadisticasContainer" style="display: none;">
+        <h2>📊 Estadísticas de Tickets</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters">
+        <label>
+          Estado:
+          <select id="filtroEstado" onchange="aplicarFiltros()">
+            <option value="">Todos</option>
+            <option value="abierto">Abierto</option>
+            <option value="en_proceso">En Proceso</option>
+            <option value="resuelto">Resuelto</option>
+            <option value="cerrado">Cerrado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </label>
+
+        <label>
+          Prioridad:
+          <select id="filtroPrioridad" onchange="aplicarFiltros()">
+            <option value="">Todas</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Lista de Tickets -->
+      <div id="listaTickets">
+        <p class="loading">Cargando tickets...</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal: Nuevo Ticket -->
+  <div id="modalNuevoTicket" class="modal">
+    <div class="modal-content">
+      <h2><i class="fas fa-ticket-alt"></i> Nuevo Ticket de Soporte</h2>
+      <form id="formNuevoTicket" onsubmit="crearTicket(event)">
+        <div class="form-group">
+          <label for="asunto">Asunto *</label>
+          <input type="text" id="asunto" required maxlength="200">
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción *</label>
+          <textarea id="descripcion" rows="5" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="prioridad">Prioridad</label>
+          <select id="prioridad">
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="proyecto_id">Proyecto (opcional)</label>
+          <select id="proyecto_id">
+            <option value="">Sin proyecto asociado</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-save"></i> Crear Ticket
+          </button>
+          <button type="button" onclick="cerrarModal('modalNuevoTicket')" class="btn-secondary">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Detalle de Ticket -->
+  <div id="modalDetalleTicket" class="modal">
+    <div class="modal-content">
+      <h2><i class="fas fa-ticket-alt"></i> Detalle del Ticket</h2>
+      <div id="detalleTicketContent"></div>
+      <div class="form-actions">
+        <button onclick="cerrarModal('modalDetalleTicket')" class="btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let sesionActual = null;
+    let ticketsActuales = [];
+
+    // ========== INICIALIZACIÓN ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+      await verificarSesion();
+      await cargarProyectos();
+      await cargarTickets();
+      
+      if (sesionActual?.rol === 'administrador') {
+        await cargarEstadisticas();
+      }
+    });
+
+    // ========== SESIÓN ==========
+    async function verificarSesion() {
+      try {
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const data = await response.json();
+        sesionActual = data;
+        document.getElementById('usuarioNombre').textContent = data.user?.nombre || data.nombre;
+
+        // Mostrar menús de admin
+        if (data.user?.rol === 'administrador' || data.rol === 'administrador') {
+          document.getElementById('menuAdmin').style.display = 'block';
+          document.getElementById('menuActividad').style.display = 'block';
+          document.getElementById('estadisticasContainer').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error al verificar sesión:', error);
+        window.location.href = 'login.html';
+      }
+    }
+
+    function cerrarSesion() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => window.location.href = 'login.html')
+        .catch(err => console.error('Error al cerrar sesión:', err));
+    }
+
+    // ========== TICKETS ==========
+    async function cargarTickets() {
+      try {
+        const filtroEstado = document.getElementById('filtroEstado').value;
+        const filtroPrioridad = document.getElementById('filtroPrioridad').value;
+
+        let url = '/api/tickets?';
+        if (filtroEstado) url += `estado=${filtroEstado}&`;
+        if (filtroPrioridad) url += `prioridad=${filtroPrioridad}&`;
+
+        const response = await fetch(url, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          ticketsActuales = data.data;
+          mostrarTickets(data.data);
+        } else {
+          throw new Error(data.message || 'Error al cargar tickets');
+        }
+      } catch (error) {
+        console.error('Error al cargar tickets:', error);
+        document.getElementById('listaTickets').innerHTML = 
+          '<p class="error">Error al cargar los tickets</p>';
+      }
+    }
+
+    function mostrarTickets(tickets) {
+      const container = document.getElementById('listaTickets');
+
+      if (tickets.length === 0) {
+        container.innerHTML = '<p class="info">No hay tickets para mostrar</p>';
+        return;
+      }
+
+      container.innerHTML = tickets.map(ticket => `
+        <div class="ticket-card prioridad-${ticket.prioridad}">
+          <div class="ticket-header">
+            <div>
+              <h3>#${ticket.id} - ${ticket.asunto}</h3>
+              <p><i class="fas fa-user"></i> ${ticket.usuario_nombre}</p>
+              ${ticket.proyecto_nombre ? `<p><i class="fas fa-project-diagram"></i> ${ticket.proyecto_nombre}</p>` : ''}
+              ${ticket.asignado_nombre ? `<p><i class="fas fa-user-check"></i> Asignado a: ${ticket.asignado_nombre}</p>` : ''}
+            </div>
+            <div class="ticket-badges">
+              <span class="badge badge-estado ${ticket.estado}">${formatearEstado(ticket.estado)}</span>
+              <span class="badge badge-prioridad ${ticket.prioridad}">${ticket.prioridad}</span>
+            </div>
+          </div>
+          
+          <p>${ticket.descripcion.substring(0, 150)}${ticket.descripcion.length > 150 ? '...' : ''}</p>
+          
+          <p class="text-muted">
+            <i class="fas fa-clock"></i> ${formatearFecha(ticket.fecha_creacion)}
+          </p>
+
+          <div class="ticket-actions">
+            <button onclick="verDetalleTicket(${ticket.id})" class="btn-info btn-sm">
+              <i class="fas fa-eye"></i> Ver Detalle
+            </button>
+            ${sesionActual?.rol === 'administrador' ? `
+              <button onclick="mostrarAsignar(${ticket.id})" class="btn-secondary btn-sm">
+                <i class="fas fa-user-plus"></i> Asignar
+              </button>
+            ` : ''}
+            <button onclick="cambiarEstado(${ticket.id}, '${ticket.estado}')" class="btn-primary btn-sm">
+              <i class="fas fa-sync"></i> Cambiar Estado
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function crearTicket(event) {
+      event.preventDefault();
+
+      const ticketData = {
+        asunto: document.getElementById('asunto').value,
+        descripcion: document.getElementById('descripcion').value,
+        prioridad: document.getElementById('prioridad').value,
+        proyecto_id: document.getElementById('proyecto_id').value || null
+      };
+
+      try {
+        const response = await fetch('/api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(ticketData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ Ticket creado exitosamente');
+          cerrarModal('modalNuevoTicket');
+          document.getElementById('formNuevoTicket').reset();
+          await cargarTickets();
+          if (sesionActual?.rol === 'administrador') {
+            await cargarEstadisticas();
+          }
+        } else {
+          throw new Error(data.message || 'Error al crear ticket');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al crear el ticket: ' + error.message);
+      }
+    }
+
+    async function verDetalleTicket(id) {
+      try {
+        const response = await fetch(`/api/tickets/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const ticket = data.data;
+          document.getElementById('detalleTicketContent').innerHTML = `
+            <div class="ticket-detail">
+              <h3>#${ticket.id} - ${ticket.asunto}</h3>
+              <p><strong>Estado:</strong> <span class="badge badge-estado">${formatearEstado(ticket.estado)}</span></p>
+              <p><strong>Prioridad:</strong> <span class="badge badge-prioridad ${ticket.prioridad}">${ticket.prioridad}</span></p>
+              <p><strong>Usuario:</strong> ${ticket.usuario_nombre} (${ticket.usuario_email})</p>
+              ${ticket.asignado_nombre ? `<p><strong>Asignado a:</strong> ${ticket.asignado_nombre} (${ticket.asignado_email})</p>` : ''}
+              ${ticket.proyecto_nombre ? `<p><strong>Proyecto:</strong> ${ticket.proyecto_nombre}</p>` : ''}
+              <hr>
+              <p><strong>Descripción:</strong></p>
+              <p>${ticket.descripcion}</p>
+              <hr>
+              <p class="text-muted"><i class="fas fa-clock"></i> Creado: ${formatearFecha(ticket.fecha_creacion)}</p>
+              ${ticket.fecha_cierre ? `<p class="text-muted"><i class="fas fa-check"></i> Cerrado: ${formatearFecha(ticket.fecha_cierre)}</p>` : ''}
+            </div>
+          `;
+          document.getElementById('modalDetalleTicket').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cargar el detalle del ticket');
+      }
+    }
+
+    async function cambiarEstado(id, estadoActual) {
+      const estados = ['abierto', 'en_proceso', 'resuelto', 'cerrado', 'cancelado'];
+      const estadosNombres = {
+        'abierto': 'Abierto',
+        'en_proceso': 'En Proceso',
+        'resuelto': 'Resuelto',
+        'cerrado': 'Cerrado',
+        'cancelado': 'Cancelado'
+      };
+
+      const opciones = estados.map(e => 
+        `<option value="${e}" ${e === estadoActual ? 'selected' : ''}>${estadosNombres[e]}</option>`
+      ).join('');
+
+      const nuevoEstado = prompt(`Seleccione el nuevo estado:\n\n${estados.map((e, i) => `${i+1}. ${estadosNombres[e]}`).join('\n')}\n\nIngrese el número:`);
+      
+      if (!nuevoEstado) return;
+
+      const estadoIndex = parseInt(nuevoEstado) - 1;
+      if (estadoIndex < 0 || estadoIndex >= estados.length) {
+        alert('Opción inválida');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/tickets/${id}/estado`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ estado: estados[estadoIndex] })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ Estado actualizado exitosamente');
+          await cargarTickets();
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al actualizar el estado');
+      }
+    }
+
+    async function cargarProyectos() {
+      try {
+        const response = await fetch('/api/projects', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success && data.projects) {
+          const select = document.getElementById('proyecto_id');
+          select.innerHTML = '<option value="">Sin proyecto asociado</option>' +
+            data.projects.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        }
+      } catch (error) {
+        console.error('Error al cargar proyectos:', error);
+      }
+    }
+
+    async function cargarEstadisticas() {
+      try {
+        const response = await fetch('/api/tickets/estadisticas', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const stats = data.data;
+          document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+              <h3>${stats.total}</h3>
+              <p>Total</p>
+            </div>
+            <div class="stat-card">
+              <h3>${stats.abiertos}</h3>
+              <p>Abiertos</p>
+            </div>
+            <div class="stat-card">
+              <h3>${stats.en_proceso}</h3>
+              <p>En Proceso</p>
+            </div>
+            <div class="stat-card">
+              <h3>${stats.resueltos}</h3>
+              <p>Resueltos</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    }
+
+    // ========== UTILIDADES ==========
+    function mostrarModalNuevoTicket() {
+      document.getElementById('modalNuevoTicket').style.display = 'block';
+    }
+
+    function cerrarModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    function aplicarFiltros() {
+      cargarTickets();
+    }
+
+    function formatearEstado(estado) {
+      const estados = {
+        'abierto': 'Abierto',
+        'en_proceso': 'En Proceso',
+        'resuelto': 'Resuelto',
+        'cerrado': 'Cerrado',
+        'cancelado': 'Cancelado'
+      };
+      return estados[estado] || estado;
+    }
+
+    function formatearFecha(fecha) {
+      if (!fecha) return 'N/A';
+      return new Date(fecha).toLocaleString('es-ES');
+    }
+
+    // Cerrar modales al hacer clic fuera
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
+    }
+  </script>
+
+</body>
+</html>
